@@ -1,47 +1,16 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PersonaSelect } from '@/components/PersonaSelect';
-import { useToast } from '@/hooks/use-toast';
-import { MessageSquare, Sparkles, Shield, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { OnboardingWizard } from '@/components/OnboardingWizard';
+import { PremiumFeatures } from '@/components/PremiumFeatures';
+import { MessageSquare, Sparkles, Shield, Zap, Play, Star, Users, ArrowRight, CheckCircle } from 'lucide-react';
 
 export const Home = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    persona: '',
-    sampleComment: ''
-  });
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.email || !formData.persona) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in your email and select a persona.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoading(true);
-    
-    // Mock API call to n8n webhook
-    setTimeout(() => {
-      toast({
-        title: "Welcome to AutoComment.AI!",
-        description: "Your account has been created. Check your dashboard.",
-      });
-      setLoading(false);
-      
-      // In a real app, this would redirect to the dashboard
-      console.log('Onboarding data:', formData);
-    }, 2000);
-  };
+  if (showOnboarding) {
+    return <OnboardingWizard />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -76,101 +45,112 @@ export const Home = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
               <Button 
-                asChild
-                className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium"
+                onClick={() => setShowOnboarding(true)}
+                size="lg"
+                className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
               >
-                <a href="/demo">Try Live Demo</a>
+                <Play className="w-5 h-5 mr-2" />
+                Start Free Now
               </Button>
               <Button 
                 asChild
                 variant="outline"
+                size="lg"
+                className="text-lg px-8 py-3"
               >
-                <a href="/dashboard">View Dashboard</a>
+                <a href="/demo">Watch Demo</a>
               </Button>
+            </div>
+
+            {/* Social Proof */}
+            <div className="flex flex-wrap justify-center items-center gap-6 text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  ))}
+                </div>
+                <span className="text-sm">4.9/5 from users</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span className="text-sm">500+ professionals</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                <span className="text-sm">Enterprise secure</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Onboarding Form */}
+      {/* Value Proposition */}
       <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle>Get Started in 30 Seconds</CardTitle>
-              <CardDescription>
-                Set up your AI comment assistant and start building better LinkedIn connections today.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="your@email.com"
-                    required
-                  />
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <Badge variant="outline" className="mb-4">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Powered by Advanced AI
+            </Badge>
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Stop Struggling with LinkedIn Comments
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Our AI generates authentic, professional comments that match your voice and help you build meaningful connections - without the stress of finding the right words.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <CheckCircle className="w-6 h-6 text-success mt-1 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">Sounds Like You</h3>
+                  <p className="text-muted-foreground">AI learns your writing style and professional tone</p>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="persona">Your Professional Persona</Label>
-                  <PersonaSelect
-                    value={formData.persona}
-                    onValueChange={(value) => setFormData({ ...formData, persona: value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="sample">Sample Comment (Optional)</Label>
-                  <Textarea
-                    id="sample"
-                    value={formData.sampleComment}
-                    onChange={(e) => setFormData({ ...formData, sampleComment: e.target.value })}
-                    placeholder="Write a comment that represents your style..."
-                    rows={3}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    This helps our AI learn your unique commenting style.
-                  </p>
-                </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-medium"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
-                      Setting up your account...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Start Free Trial
-                    </>
-                  )}
-                </Button>
-              </form>
-
-              <div className="mt-6 p-4 bg-accent rounded-lg">
-                <p className="text-sm text-accent-foreground text-center">
-                  🎉 <strong>Free:</strong> 50 comment suggestions per month • No credit card required
-                </p>
               </div>
-            </CardContent>
-          </Card>
+              <div className="flex items-start gap-4">
+                <CheckCircle className="w-6 h-6 text-success mt-1 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">Context Aware</h3>
+                  <p className="text-muted-foreground">Comments match the post content and industry</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <CheckCircle className="w-6 h-6 text-success mt-1 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">Always Safe</h3>
+                  <p className="text-muted-foreground">You review every comment before posting</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-primary/10 to-accent/20 p-8 rounded-lg">
+              <div className="text-center">
+                <MessageSquare className="w-16 h-16 mx-auto mb-4 text-primary" />
+                <h3 className="text-xl font-semibold mb-2">Ready to try it?</h3>
+                <p className="text-muted-foreground mb-4">
+                  Join hundreds of professionals already using AutoComment.AI
+                </p>
+                <Button 
+                  onClick={() => setShowOnboarding(true)}
+                  className="w-full"
+                  size="lg"
+                >
+                  Get Started Free
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Features */}
-      <div className="bg-accent/50 py-16">
+      {/* How It Works */}
+      <div className="bg-accent/30 py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-center text-foreground mb-12">
@@ -178,38 +158,43 @@ export const Home = () => {
             </h2>
             
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <span className="text-primary-foreground font-bold">1</span>
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <span className="text-primary font-bold text-xl">1</span>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">Browse LinkedIn</h3>
-                <p className="text-muted-foreground text-sm">
-                  Click the blue "Suggest Comments" button on any LinkedIn post
+                <h3 className="font-semibold text-foreground mb-2 text-lg">Install & Browse</h3>
+                <p className="text-muted-foreground">
+                  Add our Chrome extension and browse LinkedIn normally. Click "Suggest Comments" on any post.
                 </p>
               </div>
               
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <span className="text-primary-foreground font-bold">2</span>
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <span className="text-primary font-bold text-xl">2</span>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">Review & Approve</h3>
-                <p className="text-muted-foreground text-sm">
-                  Get 2-3 AI-generated comments that match your professional style
+                <h3 className="font-semibold text-foreground mb-2 text-lg">AI Generates</h3>
+                <p className="text-muted-foreground">
+                  Our AI analyzes the post and creates 2-3 authentic comments that match your professional persona.
                 </p>
               </div>
               
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <span className="text-primary-foreground font-bold">3</span>
+              <div className="text-center group">
+                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                  <span className="text-primary font-bold text-xl">3</span>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">Post & Connect</h3>
-                <p className="text-muted-foreground text-sm">
-                  Copy approved comments and paste them to build meaningful connections
+                <h3 className="font-semibold text-foreground mb-2 text-lg">Auto-Fill & Post</h3>
+                <p className="text-muted-foreground">
+                  Approve a comment and it auto-fills LinkedIn's comment box. Review and post when ready!
                 </p>
               </div>
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Premium Features */}
+      <div className="container mx-auto px-4 py-16">
+        <PremiumFeatures />
       </div>
     </div>
   );

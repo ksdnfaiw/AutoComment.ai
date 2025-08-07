@@ -180,15 +180,82 @@
     `;
   }
 
+  // Find LinkedIn comment input box
+  function findCommentBox() {
+    // Multiple selectors for LinkedIn comment input variations
+    const selectors = [
+      '.ql-editor[contenteditable="true"]', // Rich text editor
+      'textarea[placeholder*="comment"]', // Regular textarea
+      'div[contenteditable="true"][role="textbox"]', // Contenteditable div
+      '.comments-comment-box__form textarea', // Specific LinkedIn comment box
+      '[data-artdeco-is-focused] .ql-editor', // Focused comment editor
+      '.ql-editor.ql-blank' // Empty editor
+    ];
+    
+    for (const selector of selectors) {
+      const element = document.querySelector(selector);
+      if (element && element.offsetParent !== null) { // Check if visible
+        return element;
+      }
+    }
+    return null;
+  }
+
+  // Auto-fill comment in LinkedIn comment box
+  function autoFillComment(comment) {
+    const commentBox = findCommentBox();
+    
+    if (commentBox) {
+      // Focus the comment box first
+      commentBox.focus();
+      
+      // For contenteditable elements (LinkedIn rich text editor)
+      if (commentBox.contentEditable === 'true') {
+        // Clear existing content
+        commentBox.innerHTML = '';
+        // Insert comment text
+        commentBox.textContent = comment;
+        
+        // Trigger input events to ensure LinkedIn detects the change
+        commentBox.dispatchEvent(new Event('input', { bubbles: true }));
+        commentBox.dispatchEvent(new Event('change', { bubbles: true }));
+      } 
+      // For textarea elements
+      else if (commentBox.tagName === 'TEXTAREA') {
+        commentBox.value = comment;
+        commentBox.dispatchEvent(new Event('input', { bubbles: true }));
+        commentBox.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      
+      // Keep focus on the comment box
+      commentBox.focus();
+      
+      showToast('Comment added! Ready to post 🚀', 'success');
+      
+      // Highlight the comment box briefly
+      const originalBorder = commentBox.style.border;
+      commentBox.style.border = '2px solid #3b82f6';
+      setTimeout(() => {
+        commentBox.style.border = originalBorder;
+      }, 2000);
+      
+    } else {
+      // Fallback to clipboard if comment box not found
+      navigator.clipboard.writeText(comment).then(() => {
+        showToast('Comment copied to clipboard!', 'info');
+      }).catch(() => {
+        showToast('Please copy manually: ' + comment, 'error');
+      });
+    }
+  }
+
   // Handle approve comment
   function approveComment(comment) {
-    navigator.clipboard.writeText(comment).then(() => {
-      showToast('Comment copied to clipboard!', 'success');
-      // Mock API call to track approval
-      console.log('Approved comment:', comment);
-    }).catch(() => {
-      showToast('Failed to copy comment', 'error');
-    });
+    // Auto-fill the comment in LinkedIn comment box
+    autoFillComment(comment);
+    
+    // Mock API call to track approval
+    console.log('Approved comment:', comment);
   }
 
   // Handle reject comment

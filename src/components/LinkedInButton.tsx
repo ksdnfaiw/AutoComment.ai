@@ -31,23 +31,51 @@ export const LinkedInButton = () => {
   };
 
   const approveComment = async (comment: Comment) => {
-    try {
-      await navigator.clipboard.writeText(comment.text);
-      toast({
-        title: "Comment copied!",
-        description: "The comment has been copied to your clipboard.",
-      });
-      setShowPopup(false);
+    // Check if we're in the Chrome extension context
+    const isExtension = window.location.hostname === 'www.linkedin.com' || window.location.hostname === 'linkedin.com';
+    
+    if (isExtension) {
+      // Auto-fill LinkedIn comment box (extension functionality)
+      const commentBox = document.querySelector('.ql-editor[contenteditable="true"]') as HTMLElement;
       
-      // Mock API call to n8n webhook for approval
-      console.log('Approved comment:', comment);
-    } catch (error) {
-      toast({
-        title: "Copy failed",
-        description: "Please try copying manually.",
-        variant: "destructive",
-      });
+      if (commentBox) {
+        commentBox.focus();
+        commentBox.textContent = comment.text;
+        commentBox.dispatchEvent(new Event('input', { bubbles: true }));
+        
+        toast({
+          title: "Comment added!",
+          description: "Ready to post on LinkedIn 🚀",
+        });
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(comment.text);
+        toast({
+          title: "Comment copied!",
+          description: "Paste it in the LinkedIn comment box.",
+        });
+      }
+    } else {
+      // Web app version - just copy to clipboard
+      try {
+        await navigator.clipboard.writeText(comment.text);
+        toast({
+          title: "Comment copied!",
+          description: "The comment has been copied to your clipboard.",
+        });
+      } catch (error) {
+        toast({
+          title: "Copy failed",
+          description: "Please try copying manually.",
+          variant: "destructive",
+        });
+      }
     }
+    
+    setShowPopup(false);
+    
+    // Mock API call to n8n webhook for approval
+    console.log('Approved comment:', comment);
   };
 
   const rejectComment = async (comment: Comment) => {
