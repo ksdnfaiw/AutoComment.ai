@@ -69,26 +69,60 @@ export function useCommentHistory() {
 
   const addComment = async (postContent: string, generatedComment: string) => {
     try {
-      const { data, error } = await supabase
-        .from('comments')
-        .insert([
-          {
-            post_content: postContent,
-            generated_comment: generatedComment,
-            feedback: 'pending',
-            created_at: new Date().toISOString()
+      // Try multiple table names and structures
+      const tableVariations = [
+        {
+          table: 'comments',
+          data: { post_content: postContent, generated_comment: generatedComment, feedback: 'pending', created_at: new Date().toISOString() }
+        },
+        {
+          table: 'comment_history',
+          data: { post: postContent, comment: generatedComment, status: 'pending', created_at: new Date().toISOString() }
+        },
+        {
+          table: 'generated_comments',
+          data: { original_post: postContent, ai_comment: generatedComment, feedback: 'pending', timestamp: new Date().toISOString() }
+        },
+        {
+          table: 'user_comments',
+          data: { post_content: postContent, comment_text: generatedComment, approval_status: 'pending', date_created: new Date().toISOString() }
+        }
+      ]
+
+      let lastError = null
+
+      for (const variation of tableVariations) {
+        try {
+          console.log(`Trying to insert into table: ${variation.table}`)
+          const { data, error } = await supabase
+            .from(variation.table)
+            .insert([variation.data])
+            .select()
+
+          if (error) {
+            console.log(`Failed to insert into ${variation.table}:`, error)
+            lastError = error
+            continue
           }
-        ])
-        .select()
 
-      if (error) throw error
+          console.log(`✅ Successfully inserted into ${variation.table}`)
+          // Refresh the data
+          await fetchCommentHistory()
+          return { success: true, data, table: variation.table }
+        } catch (err: any) {
+          console.log(`Exception inserting into ${variation.table}:`, err)
+          lastError = err
+        }
+      }
 
-      // Refresh the data
-      await fetchCommentHistory()
-      return { success: true, data }
+      // If all variations failed, return the last error
+      const errorMessage = lastError?.message || lastError?.error_description || JSON.stringify(lastError, null, 2)
+      return { success: false, error: `Failed to insert into any table. Last error: ${errorMessage}` }
+
     } catch (err: any) {
       console.error('Error adding comment:', err)
-      return { success: false, error: err.message }
+      const errorMessage = err?.message || err?.error_description || err?.details || JSON.stringify(err, null, 2)
+      return { success: false, error: errorMessage }
     }
   }
 
