@@ -6,10 +6,14 @@ import { PremiumFeatures } from '@/components/PremiumFeatures';
 import { DatabaseExplorer } from '@/components/DatabaseExplorer';
 import { DataTest } from '@/components/DataTest';
 import { DatabaseDebug } from '@/components/DatabaseDebug';
+import { UserMenu } from '@/components/UserMenu';
+import { useAuth } from '@/contexts/AuthContext';
 import { MessageSquare, Sparkles, Shield, Zap, Play, Star, Users, ArrowRight, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const Home = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { user } = useAuth();
 
   if (showOnboarding) {
     return <OnboardingWizard />;
@@ -17,6 +21,20 @@ export const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b border-border/40">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-6 h-6 text-primary" />
+              <span className="text-xl font-bold">
+                AutoComment<span className="text-primary">.AI</span>
+              </span>
+            </div>
+            <UserMenu />
+          </div>
+        </div>
+      </header>
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/20">
         <div className="container mx-auto px-4 py-16 lg:py-24">
