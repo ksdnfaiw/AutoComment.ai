@@ -156,38 +156,84 @@ export const Dashboard = () => {
             {/* Comment History */}
             <Card>
               <CardHeader>
-                <CardTitle>Comment History</CardTitle>
-                <CardDescription>
-                  Your recent AI-generated comments and their feedback
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Database className="w-5 h-5" />
+                      Comment History
+                      {commentsLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
+                    </CardTitle>
+                    <CardDescription>
+                      Your recent AI-generated comments from Supabase database
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={refetch}
+                    variant="outline"
+                    size="sm"
+                    disabled={commentsLoading}
+                  >
+                    <RefreshCw className={`w-4 h-4 ${commentsLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Post</TableHead>
-                      <TableHead>Comment</TableHead>
-                      <TableHead>Feedback</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {commentHistory.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="max-w-xs">
-                          <p className="truncate text-sm">{item.post}</p>
-                        </TableCell>
-                        <TableCell className="max-w-sm">
-                          <p className="truncate text-sm">{item.comment}</p>
-                        </TableCell>
-                        <TableCell>{getFeedbackBadge(item.feedback)}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {new Date(item.date).toLocaleDateString()}
-                        </TableCell>
+                {commentsError ? (
+                  <div className="text-center py-8">
+                    <div className="text-red-600 mb-2">❌ {commentsError}</div>
+                    <Button onClick={addTestComment} disabled={loading} className="mr-2">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Test Comment
+                    </Button>
+                    <Button onClick={refetch} variant="outline">
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Post</TableHead>
+                        <TableHead>Comment</TableHead>
+                        <TableHead>Feedback</TableHead>
+                        <TableHead>Date</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {commentHistory.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8">
+                            <div className="text-muted-foreground">
+                              No comments found in database.
+                              <div className="mt-2">
+                                <Button onClick={addTestComment} disabled={loading}>
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Add Test Comment
+                                </Button>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        commentHistory.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className="max-w-xs">
+                              <p className="truncate text-sm">{item.post_content}</p>
+                            </TableCell>
+                            <TableCell className="max-w-sm">
+                              <p className="truncate text-sm">{item.generated_comment}</p>
+                            </TableCell>
+                            <TableCell>{getFeedbackBadge(item.feedback)}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {new Date(item.created_at).toLocaleDateString()}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </div>
