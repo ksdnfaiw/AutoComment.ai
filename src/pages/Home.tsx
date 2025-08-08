@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { OnboardingWizard } from '@/components/OnboardingWizard';
 import { PremiumFeatures } from '@/components/PremiumFeatures';
-import { SupabaseTest } from '@/components/SupabaseTest';
+import { DatabaseExplorer } from '@/components/DatabaseExplorer';
 import { MessageSquare, Sparkles, Shield, Zap, Play, Star, Users, ArrowRight, CheckCircle } from 'lucide-react';
 
 export const Home = () => {
@@ -198,9 +198,9 @@ export const Home = () => {
         <PremiumFeatures />
       </div>
 
-      {/* Supabase Connection Test */}
+      {/* Database Explorer */}
       <div className="container mx-auto px-4 py-8">
-        <SupabaseTest />
+        <DatabaseExplorer />
       </div>
     </div>
   );
