@@ -1,60 +1,64 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/contexts/AuthContext'
 
 export interface CommentHistory {
   id: string
   post_content: string
   generated_comment: string
-  feedback: 'approved' | 'rejected' | 'pending'
+  feedback: 'approved' | 'rejected' | 'pending' | 'posted'
   created_at: string
-  user_id?: string
+  user_id: string
+  persona_used?: string
+  ai_confidence_score?: number
+  user_rating?: number
 }
 
 export function useCommentHistory() {
   const [commentHistory, setCommentHistory] = useState<CommentHistory[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const { user } = useAuth()
 
   const fetchCommentHistory = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Try different possible table names for comments
-      const tableNames = ['comments', 'comment_history', 'generated_comments', 'user_comments']
-      
-      for (const tableName of tableNames) {
-        try {
-          const { data, error } = await supabase
-            .from(tableName)
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(10)
-
-          if (!error && data) {
-            // Map the data to our expected format
-            const mappedData = data.map((item: any) => ({
-              id: item.id || item.comment_id || Math.random().toString(),
-              post_content: item.post_content || item.post || item.original_post || 'LinkedIn Post',
-              generated_comment: item.generated_comment || item.comment || item.content || '',
-              feedback: item.feedback || item.status || 'pending',
-              created_at: item.created_at || new Date().toISOString(),
-              user_id: item.user_id
-            }))
-            
-            setCommentHistory(mappedData)
-            console.log(`✅ Loaded ${data.length} comments from '${tableName}' table`)
-            return
-          }
-        } catch (e) {
-          console.log(`Table '${tableName}' not accessible`)
-        }
+      if (!user) {
+        setCommentHistory([])
+        setError('Please sign in to view your comment history')
+        setLoading(false)
+        return
       }
 
-      // If no tables worked, show empty state
-      setCommentHistory([])
-      setError('No comment tables found or accessible. Check your database structure.')
-      
+      // Fetch user's comments with the new schema
+      const { data, error } = await supabase
+        .from('comments')
+        .select(`
+          id,
+          post_content,
+          generated_comment,
+          feedback,
+          created_at,
+          user_id,
+          persona_used,
+          ai_confidence_score,
+          user_rating
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      if (error) {
+        console.error('Error fetching comments:', error)
+        setError(`Failed to load comments: ${error.message}`)
+        setCommentHistory([])
+      } else {
+        setCommentHistory(data || [])
+        console.log(`✅ Loaded ${data?.length || 0} comments for user`)
+      }
+
     } catch (err: any) {
       setError(`Database error: ${err.message}`)
       console.error('Error fetching comment history:', err)
@@ -67,57 +71,39 @@ export function useCommentHistory() {
     fetchCommentHistory()
   }, [])
 
-  const addComment = async (postContent: string, generatedComment: string) => {
+  const addComment = async (postContent: string, generatedComment: string, persona?: string) => {
     try {
-      // Try multiple table names and structures
-      const tableVariations = [
-        {
-          table: 'comments',
-          data: { post_content: postContent, generated_comment: generatedComment, feedback: 'pending', created_at: new Date().toISOString() }
-        },
-        {
-          table: 'comment_history',
-          data: { post: postContent, comment: generatedComment, status: 'pending', created_at: new Date().toISOString() }
-        },
-        {
-          table: 'generated_comments',
-          data: { original_post: postContent, ai_comment: generatedComment, feedback: 'pending', timestamp: new Date().toISOString() }
-        },
-        {
-          table: 'user_comments',
-          data: { post_content: postContent, comment_text: generatedComment, approval_status: 'pending', date_created: new Date().toISOString() }
-        }
-      ]
-
-      let lastError = null
-
-      for (const variation of tableVariations) {
-        try {
-          console.log(`Trying to insert into table: ${variation.table}`)
-          const { data, error } = await supabase
-            .from(variation.table)
-            .insert([variation.data])
-            .select()
-
-          if (error) {
-            console.log(`Failed to insert into ${variation.table}:`, error)
-            lastError = error
-            continue
-          }
-
-          console.log(`✅ Successfully inserted into ${variation.table}`)
-          // Refresh the data
-          await fetchCommentHistory()
-          return { success: true, data, table: variation.table }
-        } catch (err: any) {
-          console.log(`Exception inserting into ${variation.table}:`, err)
-          lastError = err
-        }
+      if (!user) {
+        return { success: false, error: 'Please sign in to add comments' }
       }
 
-      // If all variations failed, return the last error
-      const errorMessage = lastError?.message || lastError?.error_description || JSON.stringify(lastError, null, 2)
-      return { success: false, error: `Failed to insert into any table. Last error: ${errorMessage}` }
+      console.log('Adding comment for user:', user.id)
+
+      const { data, error } = await supabase
+        .from('comments')
+        .insert([
+          {
+            user_id: user.id,
+            post_content: postContent,
+            generated_comment: generatedComment,
+            feedback: 'pending',
+            persona_used: persona || 'professional',
+            ai_confidence_score: 0.85,
+            created_at: new Date().toISOString()
+          }
+        ])
+        .select()
+
+      if (error) {
+        console.error('Error inserting comment:', error)
+        const errorMessage = error.message || error.details || JSON.stringify(error, null, 2)
+        return { success: false, error: errorMessage }
+      }
+
+      console.log('✅ Successfully added comment')
+      // Refresh the data
+      await fetchCommentHistory()
+      return { success: true, data }
 
     } catch (err: any) {
       console.error('Error adding comment:', err)
@@ -142,45 +128,52 @@ export function useUserStats() {
     daysActive: 0
   })
   const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Try to get real stats from database
+        if (!user) {
+          setStats({ totalComments: 0, approvalRate: 0, daysActive: 0 })
+          setLoading(false)
+          return
+        }
+
+        // Get user's comment stats
         const { data: comments } = await supabase
           .from('comments')
           .select('feedback, created_at')
+          .eq('user_id', user.id)
 
-        if (comments) {
+        if (comments && comments.length > 0) {
           const totalComments = comments.length
-          const approvedComments = comments.filter(c => c.feedback === 'approved').length
+          const approvedComments = comments.filter(c => c.feedback === 'approved' || c.feedback === 'posted').length
           const approvalRate = totalComments > 0 ? Math.round((approvedComments / totalComments) * 100) : 0
-          
-          // Calculate days active (simplified)
-          const firstComment = comments.sort((a, b) => 
+
+          // Calculate days active
+          const firstComment = comments.sort((a, b) =>
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
           )[0]
-          
-          const daysActive = firstComment 
-            ? Math.ceil((Date.now() - new Date(firstComment.created_at).getTime()) / (1000 * 60 * 60 * 24))
+
+          const daysActive = firstComment
+            ? Math.ceil((Date.now() - new Date(firstComment.created_at).getTime()) / (1000 * 60 * 60 * 24)) || 1
             : 0
 
           setStats({ totalComments, approvalRate, daysActive })
         } else {
-          // Fallback to mock data if no real data
-          setStats({ totalComments: 127, approvalRate: 89, daysActive: 23 })
+          // New user with no comments yet
+          setStats({ totalComments: 0, approvalRate: 0, daysActive: 0 })
         }
       } catch (error) {
         console.error('Error fetching stats:', error)
-        // Use mock data on error
-        setStats({ totalComments: 127, approvalRate: 89, daysActive: 23 })
+        setStats({ totalComments: 0, approvalRate: 0, daysActive: 0 })
       } finally {
         setLoading(false)
       }
     }
 
     fetchStats()
-  }, [])
+  }, [user])
 
   return { stats, loading }
 }
