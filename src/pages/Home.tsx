@@ -5,6 +5,7 @@ import { OnboardingWizard } from '@/components/OnboardingWizard';
 import { PremiumFeatures } from '@/components/PremiumFeatures';
 import { DatabaseExplorer } from '@/components/DatabaseExplorer';
 import { DataTest } from '@/components/DataTest';
+import { DatabaseDebug } from '@/components/DatabaseDebug';
 import { MessageSquare, Sparkles, Shield, Zap, Play, Star, Users, ArrowRight, CheckCircle } from 'lucide-react';
 
 export const Home = () => {
@@ -203,6 +204,7 @@ export const Home = () => {
       <div className="container mx-auto px-4 py-8 space-y-6">
         <DatabaseExplorer />
         <DataTest />
+        <DatabaseDebug />
       </div>
     </div>
   );
