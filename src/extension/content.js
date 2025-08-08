@@ -93,12 +93,33 @@
     </style>
   `;
 
-  // Mock AI comments data
-  const MOCK_COMMENTS = [
-    "Great insights! AI is definitely changing the game for SaaS.",
-    "Love this perspective! AI automation saves us hours daily.",
-    "Absolutely agree! The efficiency gains are incredible."
-  ];
+  // Generate personalized AI comments based on post content
+  function generatePersonalizedComments(postContent, persona) {
+    // Enhanced comment generation with reduced emojis and better personalization
+    const baseComments = {
+      'SaaS Founder': [
+        `This resonates deeply. We've seen similar trends disrupting our industry.`,
+        `Valuable perspective here. The strategic implications are significant for SaaS businesses.`,
+        `Absolutely agree with this approach. We're implementing something similar at our company.`
+      ],
+      'Marketer': [
+        `This is exactly what we're seeing in our campaigns. Data-driven insights like this are gold.`,
+        `Brilliant analysis! The conversion metrics must be telling an interesting story here.`,
+        `Love how you've broken this down. We're testing similar strategies with great results.`
+      ],
+      'Analyst': [
+        `The data supports this conclusion. Have you analyzed the correlation with market trends?`,
+        `Compelling analysis. The methodology here aligns with best practices in the field.`,
+        `This framework makes sense. Would be interesting to see the longitudinal data on this.`
+      ]
+    };
+    
+    return baseComments[persona] || [
+      `Insightful perspective on this topic. Thanks for sharing your expertise.`,
+      `This analysis adds real value to the conversation. Well articulated.`,
+      `Great point about the industry implications. Looking forward to seeing how this develops.`
+    ];
+  }
 
   // Find LinkedIn post containers
   function findPostContainers() {
@@ -180,73 +201,118 @@
     `;
   }
 
-  // Find LinkedIn comment input box
+  // Enhanced LinkedIn comment box finder with better selectors
   function findCommentBox() {
-    // Multiple selectors for LinkedIn comment input variations
+    // Updated selectors for LinkedIn's latest DOM structure
     const selectors = [
-      '.ql-editor[contenteditable="true"]', // Rich text editor
-      'textarea[placeholder*="comment"]', // Regular textarea
-      'div[contenteditable="true"][role="textbox"]', // Contenteditable div
-      '.comments-comment-box__form textarea', // Specific LinkedIn comment box
-      '[data-artdeco-is-focused] .ql-editor', // Focused comment editor
-      '.ql-editor.ql-blank' // Empty editor
+      '.ql-editor[contenteditable="true"]:not([aria-hidden="true"])', // Active rich text editor
+      'div[contenteditable="true"][role="textbox"]:not([aria-hidden="true"])', // Main contenteditable
+      '.comments-comment-box__form .ql-editor', // Comment form editor
+      '.comments-comment-texteditor .ql-editor', // Alternative comment editor
+      '[data-test-id="comments-comment-texteditor"] .ql-editor', // Test ID selector
+      '.comments-comment-box textarea', // Fallback textarea
+      'div[data-placeholder*="comment" i][contenteditable="true"]' // Placeholder-based selector
     ];
     
     for (const selector of selectors) {
-      const element = document.querySelector(selector);
-      if (element && element.offsetParent !== null) { // Check if visible
-        return element;
+      const elements = document.querySelectorAll(selector);
+      for (const element of elements) {
+        // Check if element is visible and not disabled
+        if (element && 
+            element.offsetParent !== null && 
+            !element.hasAttribute('aria-hidden') &&
+            !element.disabled &&
+            getComputedStyle(element).display !== 'none') {
+          return element;
+        }
       }
     }
     return null;
   }
 
-  // Auto-fill comment in LinkedIn comment box
+  // Enhanced auto-fill function with better LinkedIn integration
   function autoFillComment(comment) {
-    const commentBox = findCommentBox();
+    let attempts = 0;
+    const maxAttempts = 5;
     
-    if (commentBox) {
-      // Focus the comment box first
-      commentBox.focus();
+    function tryFillComment() {
+      const commentBox = findCommentBox();
       
-      // For contenteditable elements (LinkedIn rich text editor)
-      if (commentBox.contentEditable === 'true') {
-        // Clear existing content
-        commentBox.innerHTML = '';
-        // Insert comment text
-        commentBox.textContent = comment;
+      if (commentBox) {
+        // Scroll comment box into view
+        commentBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        // Trigger input events to ensure LinkedIn detects the change
-        commentBox.dispatchEvent(new Event('input', { bubbles: true }));
-        commentBox.dispatchEvent(new Event('change', { bubbles: true }));
-      } 
-      // For textarea elements
-      else if (commentBox.tagName === 'TEXTAREA') {
-        commentBox.value = comment;
-        commentBox.dispatchEvent(new Event('input', { bubbles: true }));
-        commentBox.dispatchEvent(new Event('change', { bubbles: true }));
+        // Wait a moment for scroll to complete
+        setTimeout(() => {
+          // Click to ensure focus
+          commentBox.click();
+          
+          // Small delay for LinkedIn to initialize
+          setTimeout(() => {
+            // For contenteditable elements (LinkedIn rich text editor)
+            if (commentBox.contentEditable === 'true') {
+              // Clear existing content using selection
+              const range = document.createRange();
+              range.selectNodeContents(commentBox);
+              const selection = window.getSelection();
+              selection.removeAllRanges();
+              selection.addRange(range);
+              
+              // Insert comment text
+              document.execCommand('insertText', false, comment);
+              
+              // Trigger comprehensive events
+              const events = ['input', 'keyup', 'change', 'blur', 'focus'];
+              events.forEach(eventType => {
+                commentBox.dispatchEvent(new Event(eventType, { bubbles: true }));
+              });
+            } 
+            // For textarea elements
+            else if (commentBox.tagName === 'TEXTAREA') {
+              commentBox.value = comment;
+              commentBox.dispatchEvent(new Event('input', { bubbles: true }));
+              commentBox.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            
+            // Final focus
+            commentBox.focus();
+            
+            showToast('Comment ready to post! Click the Post button when ready', 'success');
+            
+            // Enhanced visual feedback
+            const originalStyle = {
+              border: commentBox.style.border,
+              boxShadow: commentBox.style.boxShadow
+            };
+            
+            commentBox.style.border = '2px solid #10b981';
+            commentBox.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+            
+            setTimeout(() => {
+              commentBox.style.border = originalStyle.border;
+              commentBox.style.boxShadow = originalStyle.boxShadow;
+            }, 3000);
+            
+          }, 100);
+        }, 200);
+        
+      } else {
+        attempts++;
+        if (attempts < maxAttempts) {
+          // Retry after a delay
+          setTimeout(tryFillComment, 500);
+        } else {
+          // Fallback to clipboard
+          navigator.clipboard.writeText(comment).then(() => {
+            showToast('Comment copied to clipboard! Paste it in the comment box', 'info');
+          }).catch(() => {
+            showToast(`Comment: "${comment}" - Please copy manually`, 'error');
+          });
+        }
       }
-      
-      // Keep focus on the comment box
-      commentBox.focus();
-      
-      showToast('Comment added! Ready to post 🚀', 'success');
-      
-      // Highlight the comment box briefly
-      const originalBorder = commentBox.style.border;
-      commentBox.style.border = '2px solid #3b82f6';
-      setTimeout(() => {
-        commentBox.style.border = originalBorder;
-      }, 2000);
-      
-    } else {
-      // Fallback to clipboard if comment box not found
-      navigator.clipboard.writeText(comment).then(() => {
-        showToast('Comment copied to clipboard!', 'info');
-      }).catch(() => {
-        showToast('Please copy manually: ' + comment, 'error');
-      });
     }
+    
+    tryFillComment();
   }
 
   // Handle approve comment
@@ -332,8 +398,18 @@
           loadingDiv.style.display = 'none';
           commentsDiv.style.display = 'block';
           
+          // Get post content for personalization
+          const postElement = post.closest('[data-urn]') || post.closest('.feed-shared-update-v2');
+          const postContent = postElement ? postElement.textContent.slice(0, 200) : '';
+          
+          // Get user persona from localStorage or default
+          const userPersona = localStorage.getItem('autocomment-persona') || 'SaaS Founder';
+          
+          // Generate personalized comments
+          const personalizedComments = generatePersonalizedComments(postContent, userPersona);
+          
           // Add comments
-          commentsDiv.innerHTML = MOCK_COMMENTS.map(createCommentHTML).join('');
+          commentsDiv.innerHTML = personalizedComments.map(createCommentHTML).join('');
           
           // Add event listeners to comment buttons
           commentsDiv.querySelectorAll('.approve-btn').forEach(btn => {

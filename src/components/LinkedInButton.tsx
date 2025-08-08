@@ -18,14 +18,34 @@ export const LinkedInButton = () => {
     setLoading(true);
     setShowPopup(true);
     
-    // Mock API call to n8n webhook
+    // Enhanced personalized comment generation
     setTimeout(() => {
-      const mockComments = [
-        { id: '1', text: 'Great insights! AI is definitely changing the game for SaaS.' },
-        { id: '2', text: 'Love this perspective! AI automation saves us hours daily.' },
-        { id: '3', text: 'Absolutely agree! The efficiency gains are incredible.' }
+      const persona = localStorage.getItem('autocomment-persona') || 'SaaS Founder';
+      const personalizedComments = {
+        'SaaS Founder': [
+          { id: '1', text: 'This resonates deeply. We\'ve seen similar trends disrupting our industry.' },
+          { id: '2', text: 'Valuable perspective here. The strategic implications are significant for SaaS businesses.' },
+          { id: '3', text: 'Absolutely agree with this approach. We\'re implementing something similar at our company.' }
+        ],
+        'Marketer': [
+          { id: '1', text: 'This is exactly what we\'re seeing in our campaigns. Data-driven insights like this are gold.' },
+          { id: '2', text: 'Brilliant analysis! The conversion metrics must be telling an interesting story here.' },
+          { id: '3', text: 'Love how you\'ve broken this down. We\'re testing similar strategies with great results.' }
+        ],
+        'Analyst': [
+          { id: '1', text: 'The data supports this conclusion. Have you analyzed the correlation with market trends?' },
+          { id: '2', text: 'Compelling analysis. The methodology here aligns with best practices in the field.' },
+          { id: '3', text: 'This framework makes sense. Would be interesting to see the longitudinal data on this.' }
+        ]
+      };
+      
+      const comments = personalizedComments[persona] || [
+        { id: '1', text: 'Insightful perspective on this topic. Thanks for sharing your expertise.' },
+        { id: '2', text: 'This analysis adds real value to the conversation. Well articulated.' },
+        { id: '3', text: 'Great point about the industry implications. Looking forward to seeing how this develops.' }
       ];
-      setComments(mockComments);
+      
+      setComments(comments);
       setLoading(false);
     }, 1500);
   };
@@ -39,14 +59,48 @@ export const LinkedInButton = () => {
       const commentBox = document.querySelector('.ql-editor[contenteditable="true"]') as HTMLElement;
       
       if (commentBox) {
-        commentBox.focus();
-        commentBox.textContent = comment.text;
-        commentBox.dispatchEvent(new Event('input', { bubbles: true }));
+        // Enhanced auto-fill with better LinkedIn integration
+        commentBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        toast({
-          title: "Comment added!",
-          description: "Ready to post on LinkedIn 🚀",
-        });
+        setTimeout(() => {
+          commentBox.click();
+          
+          setTimeout(() => {
+            if (commentBox.contentEditable === 'true') {
+              // Clear and insert using selection for better compatibility
+              const range = document.createRange();
+              range.selectNodeContents(commentBox);
+              const selection = window.getSelection();
+              selection.removeAllRanges();
+              selection.addRange(range);
+              
+              document.execCommand('insertText', false, comment.text);
+              
+              // Trigger comprehensive events
+              ['input', 'keyup', 'change', 'blur', 'focus'].forEach(eventType => {
+                commentBox.dispatchEvent(new Event(eventType, { bubbles: true }));
+              });
+            } else if (commentBox.tagName === 'TEXTAREA') {
+              (commentBox as HTMLTextAreaElement).value = comment.text;
+              commentBox.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            
+            commentBox.focus();
+            
+            toast({
+              title: "Comment ready to post!",
+              description: "Click the Post button when ready",
+            });
+            
+            // Visual feedback
+            const originalStyle = commentBox.style.border;
+            commentBox.style.border = '2px solid #10b981';
+            setTimeout(() => {
+              commentBox.style.border = originalStyle;
+            }, 3000);
+          }, 100);
+        }, 200);
+        
       } else {
         // Fallback to clipboard
         await navigator.clipboard.writeText(comment.text);

@@ -71,7 +71,7 @@ export const PremiumFeatures = () => {
     },
     {
       name: "Pro",
-      price: "$19",
+      price: "$10",
       period: "/month",
       description: "For active networkers",
       features: [
