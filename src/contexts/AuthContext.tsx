@@ -50,6 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             title: "Welcome back!",
             description: `Signed in as ${session?.user?.email}`,
           })
+
+          // Redirect to dashboard after successful sign in
+          if (window.location.pathname === '/auth') {
+            window.location.href = '/dashboard'
+          }
         } else if (event === 'SIGNED_OUT') {
           toast({
             title: "Signed out",
