@@ -68,22 +68,49 @@ export const Home = () => {
             </div>
 
             <div className="flex flex-wrap justify-center gap-4 mb-8">
-              <Button 
-                onClick={() => setShowOnboarding(true)}
-                size="lg"
-                className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Start Free Now
-              </Button>
-              <Button 
-                asChild
-                variant="outline"
-                size="lg"
-                className="text-lg px-8 py-3"
-              >
-                <a href="/demo">Watch Demo</a>
-              </Button>
+              {user ? (
+                <>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
+                  >
+                    <Link to="/dashboard">
+                      <Play className="w-5 h-5 mr-2" />
+                      Go to Dashboard
+                    </Link>
+                  </Button>
+                  <Button
+                    onClick={() => setShowOnboarding(true)}
+                    variant="outline"
+                    size="lg"
+                    className="text-lg px-8 py-3"
+                  >
+                    Setup Wizard
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
+                  >
+                    <Link to="/auth">
+                      <Play className="w-5 h-5 mr-2" />
+                      Start Free Now
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="text-lg px-8 py-3"
+                  >
+                    <Link to="/demo">Watch Demo</Link>
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Social Proof */}
