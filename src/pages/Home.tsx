@@ -7,6 +7,7 @@ import { DatabaseExplorer } from '@/components/DatabaseExplorer';
 import { DataTest } from '@/components/DataTest';
 import { DatabaseDebug } from '@/components/DatabaseDebug';
 import { DatabaseSetup } from '@/components/DatabaseSetup';
+import { SetupVerification } from '@/components/SetupVerification';
 import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { MessageSquare, Sparkles, Shield, Zap, Play, Star, Users, ArrowRight, CheckCircle } from 'lucide-react';
@@ -264,6 +265,7 @@ export const Home = () => {
       {/* Database Setup & Testing */}
       <div className="container mx-auto px-4 py-8 space-y-6">
         <DatabaseSetup />
+        {user && <SetupVerification />}
         <DatabaseExplorer />
         <DataTest />
         <DatabaseDebug />
