@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Login } from '@/components/auth/Login'
 import { Signup } from '@/components/auth/Signup'
+import { EmailVerificationHelper } from '@/components/auth/EmailVerificationHelper'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { MessageSquare, CheckCircle } from 'lucide-react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
@@ -10,11 +11,19 @@ export function Auth() {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [searchParams] = useSearchParams()
   const [showConfirmed, setShowConfirmed] = useState(false)
+  const [showEmailHelper, setShowEmailHelper] = useState(false)
+  const [lastSignupEmail, setLastSignupEmail] = useState('')
   const { user } = useAuth()
   const navigate = useNavigate()
 
   const toggleMode = () => {
     setMode(mode === 'login' ? 'signup' : 'login')
+    setShowEmailHelper(false)
+  }
+
+  const handleSignupSuccess = (email: string) => {
+    setLastSignupEmail(email)
+    setShowEmailHelper(true)
   }
 
   // Handle email confirmation
@@ -67,7 +76,18 @@ export function Auth() {
         {mode === 'login' ? (
           <Login onToggleMode={toggleMode} />
         ) : (
-          <Signup onToggleMode={toggleMode} />
+          <Signup onToggleMode={toggleMode} onSignupSuccess={handleSignupSuccess} />
+        )}
+
+        {/* Email Verification Helper */}
+        {showEmailHelper && (
+          <EmailVerificationHelper
+            email={lastSignupEmail}
+            onVerificationSuccess={() => {
+              setShowEmailHelper(false)
+              navigate('/onboarding')
+            }}
+          />
         )}
 
         {/* Footer */}

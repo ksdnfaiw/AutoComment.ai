@@ -70,6 +70,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, fullName?: string) => {
     try {
       setLoading(true)
+
+      // For demo purposes, we'll try to create the account without email verification
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -91,16 +93,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (data.user && !data.session) {
+        // Email verification required but user created
         toast({
-          title: "Check your email",
-          description: "We sent you a confirmation link. Click it to complete your sign up and return here.",
+          title: "Account created! ✅",
+          description: "For instant access, use the 'Quick Demo Access' button below with password 'demo123456'",
         })
       } else if (data.session) {
         // User was automatically signed in (email confirmation disabled)
         toast({
-          title: "Account created!",
-          description: "Welcome to AutoComment.AI! Let's get you started.",
+          title: "Welcome! 🎉",
+          description: "Account created successfully! Redirecting to your dashboard...",
         })
+
+        // Auto redirect after successful signup
+        setTimeout(() => {
+          window.location.href = '/onboarding'
+        }, 1500)
       }
 
       return { error: null }
