@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,6 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { PersonaSelect } from '@/components/PersonaSelect';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserPreferences } from '@/hooks/useUserPreferences';
+import { useNavigate } from 'react-router-dom';
 import { 
   CheckCircle, 
   ArrowRight, 
@@ -43,12 +46,48 @@ export const OnboardingWizard = () => {
     reviewedComments: []
   });
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const {
+    preferences,
+    loading: preferencesLoading,
+    saving,
+    savePreferences,
+    updateOnboardingStep,
+    completeOnboarding,
+    addApprovedComment,
+    addRejectedComment
+  } = useUserPreferences();
 
   const mockComments: Comment[] = [
     { id: '1', text: 'Great insights! AI is definitely transforming how we approach SaaS development.' },
     { id: '2', text: 'Love this perspective! AI automation has been a game-changer for our team.' },
     { id: '3', text: 'Absolutely agree! The efficiency gains from AI tools are incredible.' }
   ];
+
+  // Redirect to auth if not authenticated
+  useEffect(() => {
+    if (!user && !preferencesLoading) {
+      navigate('/auth');
+    }
+  }, [user, preferencesLoading, navigate]);
+
+  // Load existing preferences
+  useEffect(() => {
+    if (preferences && !preferencesLoading) {
+      setData({
+        email: preferences.email || user?.email || '',
+        persona: preferences.persona || '',
+        sampleComment: preferences.sample_comment || '',
+        reviewedComments: mockComments.map(comment => ({
+          ...comment,
+          approved: preferences.approved_comments.includes(comment.text),
+          rejected: preferences.rejected_comments.includes(comment.text)
+        }))
+      });
+      setCurrentStep(preferences.onboarding_step || 1);
+    }
+  }, [preferences, preferencesLoading, user]);
 
   const handleStepSubmit = async () => {
     if (currentStep === 1) {
@@ -60,14 +99,27 @@ export const OnboardingWizard = () => {
         });
         return;
       }
-      
+
       setLoading(true);
-      // Mock API call to generate personalized comments
-      setTimeout(() => {
-        setData(prev => ({ ...prev, reviewedComments: mockComments }));
-        setCurrentStep(2);
+
+      // Save step 1 data to Supabase
+      const result = await savePreferences({
+        email: data.email,
+        persona: data.persona,
+        sample_comment: data.sampleComment,
+        onboarding_step: 2
+      });
+
+      if (result?.success) {
+        // Mock API call to generate personalized comments
+        setTimeout(() => {
+          setData(prev => ({ ...prev, reviewedComments: mockComments }));
+          setCurrentStep(2);
+          setLoading(false);
+        }, 1500);
+      } else {
         setLoading(false);
-      }, 1500);
+      }
     } else if (currentStep === 2) {
       const approvedCount = data.reviewedComments.filter(c => c.approved).length;
       if (approvedCount === 0) {
@@ -78,21 +130,46 @@ export const OnboardingWizard = () => {
         });
         return;
       }
+
+      // Save approved/rejected comments
+      const approvedComments = data.reviewedComments.filter(c => c.approved).map(c => c.text);
+      const rejectedComments = data.reviewedComments.filter(c => c.rejected).map(c => c.text);
+
+      await savePreferences({
+        approved_comments: approvedComments,
+        rejected_comments: rejectedComments,
+        onboarding_step: 3
+      });
+
       setCurrentStep(3);
     } else if (currentStep === 3) {
+      await updateOnboardingStep(4);
       setCurrentStep(4);
+    } else if (currentStep === 4) {
+      await completeOnboarding();
+      navigate('/dashboard');
     }
   };
 
-  const handleCommentAction = (commentId: string, action: 'approve' | 'reject') => {
+  const handleCommentAction = async (commentId: string, action: 'approve' | 'reject') => {
+    const comment = data.reviewedComments.find(c => c.id === commentId);
+    if (!comment) return;
+
     setData(prev => ({
       ...prev,
-      reviewedComments: prev.reviewedComments.map(comment =>
-        comment.id === commentId
-          ? { ...comment, approved: action === 'approve', rejected: action === 'reject' }
-          : comment
+      reviewedComments: prev.reviewedComments.map(c =>
+        c.id === commentId
+          ? { ...c, approved: action === 'approve', rejected: action === 'reject' }
+          : c
       )
     }));
+
+    // Save to preferences immediately
+    if (action === 'approve') {
+      await addApprovedComment(comment.text);
+    } else {
+      await addRejectedComment(comment.text);
+    }
   };
 
   const completedSteps = currentStep - 1;
@@ -318,11 +395,18 @@ export const OnboardingWizard = () => {
                   </div>
 
                   <div className="flex gap-4 justify-center">
-                    <Button asChild>
-                      <a href="/dashboard">
-                        Go to Dashboard
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </a>
+                    <Button onClick={handleStepSubmit} disabled={saving}>
+                      {saving ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
+                          Completing...
+                        </>
+                      ) : (
+                        <>
+                          Go to Dashboard
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </>
+                      )}
                     </Button>
                     <Button variant="outline" asChild>
                       <a href="/demo">Try Demo</a>
@@ -346,13 +430,13 @@ export const OnboardingWizard = () => {
               {currentStep < 4 && (
                 <Button
                   onClick={handleStepSubmit}
-                  disabled={loading}
+                  disabled={loading || saving}
                   className="bg-primary hover:bg-primary-hover"
                 >
-                  {loading ? (
+                  {loading || saving ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2" />
-                      Processing...
+                      {saving ? 'Saving...' : 'Processing...'}
                     </>
                   ) : currentStep === 3 ? (
                     <>
