@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { OnboardingWizard } from '@/components/OnboardingWizard';
 import { PremiumFeatures } from '@/components/PremiumFeatures';
+import { EmailVerificationFix } from '@/components/EmailVerificationFix';
 import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
 import { MessageSquare, Sparkles, Shield, Zap, Play, Star, Users, ArrowRight, CheckCircle } from 'lucide-react';
@@ -255,6 +256,21 @@ export const Home = () => {
       {/* Premium Features */}
       <div className="container mx-auto px-4 py-16">
         <PremiumFeatures />
+      </div>
+
+      {/* Email Verification Fix - Temporary for user issue */}
+      <div className="bg-orange-50 py-16">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-orange-900 mb-2">
+              📧 Email Verification Issues?
+            </h2>
+            <p className="text-orange-700">
+              Quick fix to get you started immediately - no email verification needed!
+            </p>
+          </div>
+          <EmailVerificationFix />
+        </div>
       </div>
     </div>
   );
