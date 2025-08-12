@@ -74,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth?confirmed=true`,
           data: {
             full_name: fullName,
           }
@@ -92,7 +93,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (data.user && !data.session) {
         toast({
           title: "Check your email",
-          description: "We sent you a confirmation link to complete your sign up.",
+          description: "We sent you a confirmation link. Click it to complete your sign up and return here.",
+        })
+      } else if (data.session) {
+        // User was automatically signed in (email confirmation disabled)
+        toast({
+          title: "Account created!",
+          description: "Welcome to AutoComment.AI! Let's get you started.",
         })
       }
 
