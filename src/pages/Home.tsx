@@ -184,14 +184,29 @@ export const Home = () => {
                 <p className="text-muted-foreground mb-4">
                   Join hundreds of professionals already using AutoComment.AI
                 </p>
-                <Button 
-                  onClick={() => setShowOnboarding(true)}
-                  className="w-full"
-                  size="lg"
-                >
-                  Get Started Free
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                {user ? (
+                  <Button
+                    asChild
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Link to="/dashboard">
+                      Go to Dashboard
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Link to="/auth">
+                      Get Started Free
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
           </div>
