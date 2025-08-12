@@ -81,12 +81,12 @@ export const Home = () => {
                     </Link>
                   </Button>
                   <Button
-                    onClick={() => setShowOnboarding(true)}
+                    asChild
                     variant="outline"
                     size="lg"
                     className="text-lg px-8 py-3"
                   >
-                    Setup Wizard
+                    <Link to="/onboarding">Setup Wizard</Link>
                   </Button>
                 </>
               ) : (
