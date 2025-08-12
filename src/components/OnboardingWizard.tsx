@@ -1,102 +1,82 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PersonaSelect } from '@/components/PersonaSelect';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  CheckCircle, 
-  ArrowRight, 
-  ArrowLeft, 
-  Sparkles, 
-  User, 
-  MessageSquare, 
-  Target,
-  Chrome,
-  Download
-} from 'lucide-react';
+import { CheckCircle, ArrowRight, ArrowLeft, MessageSquare } from 'lucide-react';
+import { useOnboardingPreferences } from '@/hooks/useOnboardingPreferences';
 
-interface Comment {
+interface Sample {
   id: string;
   text: string;
-  approved?: boolean;
-  rejected?: boolean;
+  liked?: boolean;
 }
 
-interface OnboardingData {
-  email: string;
-  persona: string;
-  sampleComment: string;
-  reviewedComments: Comment[];
+interface OnboardingPrefs {
+  toneStyle: string;
+  industryDomain: string;
+  sampleFeedback: Sample[];
 }
 
 export const OnboardingWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<OnboardingData>({
-    email: '',
-    persona: '',
-    sampleComment: '',
-    reviewedComments: []
+  const [prefs, setPrefs] = useState<OnboardingPrefs>({
+    toneStyle: '',
+    industryDomain: '',
+    sampleFeedback: []
   });
   const { toast } = useToast();
+  const { saveToneStyle, saveIndustryDomain, saveSampleFeedback } = useOnboardingPreferences();
 
-  const mockComments: Comment[] = [
-    { id: '1', text: 'Great insights! AI is definitely transforming how we approach SaaS development.' },
-    { id: '2', text: 'Love this perspective! AI automation has been a game-changer for our team.' },
-    { id: '3', text: 'Absolutely agree! The efficiency gains from AI tools are incredible.' }
-  ];
+const samples: Sample[] = [
+  { id: '1', text: 'Appreciate this perspective—clear, actionable insights that drive results.' },
+  { id: '2', text: 'Great breakdown! Curious how you’d apply this in a lean team setting.' },
+  { id: '3', text: 'Strong take. I’d add that execution speed often beats perfect strategy.' }
+];
 
-  const handleStepSubmit = async () => {
-    if (currentStep === 1) {
-      if (!data.email || !data.persona) {
-        toast({
-          title: "Missing information",
-          description: "Please fill in your email and select a persona.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      setLoading(true);
-      // Mock API call to generate personalized comments
-      setTimeout(() => {
-        setData(prev => ({ ...prev, reviewedComments: mockComments }));
-        setCurrentStep(2);
-        setLoading(false);
-      }, 1500);
-    } else if (currentStep === 2) {
-      const approvedCount = data.reviewedComments.filter(c => c.approved).length;
-      if (approvedCount === 0) {
-        toast({
-          title: "Review required",
-          description: "Please approve at least one comment to continue.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setCurrentStep(3);
-    } else if (currentStep === 3) {
-      setCurrentStep(4);
+const handleStepSubmit = async () => {
+  if (currentStep === 1) {
+    if (!prefs.toneStyle) {
+      toast({
+        title: 'Pick a tone',
+        description: 'Please select a tone to continue.',
+        variant: 'destructive',
+      });
+      return;
     }
-  };
+    setCurrentStep(2);
+  } else if (currentStep === 2) {
+    if (!prefs.industryDomain) {
+      toast({
+        title: 'Select an industry',
+        description: 'Please choose your industry/domain.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setCurrentStep(3);
+  } else if (currentStep === 3) {
+    setLoading(true);
+    await saveSampleFeedback(prefs.sampleFeedback.length ? prefs.sampleFeedback : samples.map(s => ({ ...s, liked: s.liked ?? false })));
+    setLoading(false);
+    setCurrentStep(4);
+  }
+};
 
-  const handleCommentAction = (commentId: string, action: 'approve' | 'reject') => {
-    setData(prev => ({
-      ...prev,
-      reviewedComments: prev.reviewedComments.map(comment =>
-        comment.id === commentId
-          ? { ...comment, approved: action === 'approve', rejected: action === 'reject' }
-          : comment
-      )
-    }));
-  };
+const handleSampleAction = (sampleId: string, liked: boolean) => {
+  setPrefs(prev => {
+    const existing = prev.sampleFeedback.find(s => s.id === sampleId);
+    const updated = existing
+      ? prev.sampleFeedback.map(s => (s.id === sampleId ? { ...s, liked } : s))
+      : [...prev.sampleFeedback, { ...(samples.find(s => s.id === sampleId) as Sample), liked }];
+    return { ...prev, sampleFeedback: updated };
+  });
+};
 
-  const completedSteps = currentStep - 1;
-  const progress = (completedSteps / 3) * 100;
+const totalSteps = 4;
+const progress = (currentStep / totalSteps) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/30 to-primary/10 flex items-center justify-center p-4">
@@ -167,170 +147,131 @@ export const OnboardingWizard = () => {
 
           <CardContent className="space-y-6">
             {/* Step 1: Basic Info */}
-            {currentStep === 1 && (
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    Email Address
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={data.email}
-                    onChange={(e) => setData({ ...data, email: e.target.value })}
-                    placeholder="your@email.com"
-                    className="h-12"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="persona" className="flex items-center gap-2">
-                    <Target className="w-4 h-4" />
-                    Your Professional Persona
-                  </Label>
-                  <PersonaSelect
-                    value={data.persona}
-                    onValueChange={(value) => setData({ ...data, persona: value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="sample" className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4" />
-                    Sample Comment (Optional)
-                  </Label>
-                  <Textarea
-                    id="sample"
-                    value={data.sampleComment}
-                    onChange={(e) => setData({ ...data, sampleComment: e.target.value })}
-                    placeholder="Write a comment that represents your style..."
-                    rows={3}
-                    className="resize-none"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    This helps our AI learn your unique commenting style.
-                  </p>
-                </div>
-              </div>
-            )}
+{currentStep === 1 && (
+  <div className="space-y-6">
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {['Friendly', 'Professional', 'Thought Leader', 'Casual', 'Humorous'].map((tone) => {
+          const selected = prefs.toneStyle === tone;
+          return (
+            <Button
+              key={tone}
+              type="button"
+              variant={selected ? 'default' : 'outline'}
+              className="justify-start h-12"
+              onClick={async () => {
+                setPrefs((p) => ({ ...p, toneStyle: tone }));
+                await saveToneStyle(tone);
+              }}
+            >
+              {tone}
+            </Button>
+          );
+        })}
+      </div>
+      <p className="text-sm text-muted-foreground">You can change this later in settings.</p>
+    </div>
+  </div>
+)}
 
             {/* Step 2: Comment Review */}
-            {currentStep === 2 && (
-              <div className="space-y-4">
-                {data.reviewedComments.map((comment) => (
-                  <div key={comment.id} className="p-4 bg-muted rounded-lg border">
-                    <p className="text-foreground mb-4 leading-relaxed">
-                      "{comment.text}"
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleCommentAction(comment.id, 'approve')}
-                        size="sm"
-                        variant={comment.approved ? "default" : "outline"}
-                        className="flex-1"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        {comment.approved ? 'Approved' : 'Approve'}
-                      </Button>
-                      <Button
-                        onClick={() => handleCommentAction(comment.id, 'reject')}
-                        size="sm"
-                        variant={comment.rejected ? "destructive" : "outline"}
-                        className="flex-1"
-                      >
-                        {comment.rejected ? 'Rejected' : 'Reject'}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                
-                <div className="mt-6 p-4 bg-accent rounded-lg">
-                  <p className="text-sm text-accent-foreground">
-                    💡 <strong>Tip:</strong> Approved comments help train your AI to match your style better.
-                  </p>
-                </div>
-              </div>
-            )}
+{currentStep === 2 && (
+  <div className="space-y-4">
+    <div>
+      <Select
+        value={prefs.industryDomain}
+        onValueChange={async (val) => {
+          setPrefs((p) => ({ ...p, industryDomain: val }));
+          await saveIndustryDomain(val);
+        }}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Choose an industry" />
+        </SelectTrigger>
+        <SelectContent className="z-50">
+          {['Tech', 'Marketing', 'Finance', 'HR', 'E-commerce', 'Healthcare', 'Education', 'Consulting'].map((ind) => (
+            <SelectItem key={ind} value={ind}>{ind}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+    <div className="p-4 bg-accent rounded-lg">
+      <p className="text-sm text-accent-foreground">
+        Tip: Selecting your domain boosts relevance of suggestions.
+      </p>
+    </div>
+  </div>
+)}
 
             {/* Step 3: Extension Install */}
-            {currentStep === 3 && (
-              <div className="space-y-6 text-center">
-                <div className="p-8 bg-gradient-to-br from-primary/10 to-accent/20 rounded-lg">
-                  <Chrome className="w-16 h-16 mx-auto mb-4 text-primary" />
-                  <h3 className="text-lg font-semibold mb-2">Chrome Extension</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Install our extension to see "Suggest Comments" buttons on LinkedIn posts.
-                  </p>
-                  <Button className="mb-4" size="lg">
-                    <Download className="w-4 h-4 mr-2" />
-                    Add to Chrome
-                  </Button>
-                  <p className="text-xs text-muted-foreground">
-                    Free • No permissions required • Works instantly
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                  <div className="p-4">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <span className="text-primary font-bold">1</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Install extension</p>
-                  </div>
-                  <div className="p-4">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <span className="text-primary font-bold">2</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Visit LinkedIn</p>
-                  </div>
-                  <div className="p-4">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <span className="text-primary font-bold">3</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Click "Suggest Comments"</p>
-                  </div>
-                </div>
-              </div>
-            )}
+{currentStep === 3 && (
+  <div className="space-y-4">
+    {samples.map((sample) => {
+      const state = prefs.sampleFeedback.find((s) => s.id === sample.id)?.liked;
+      return (
+        <div key={sample.id} className="p-4 bg-muted rounded-lg border">
+          <p className="text-foreground mb-4 leading-relaxed">"{sample.text}"</p>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => handleSampleAction(sample.id, true)}
+              size="sm"
+              variant={state === true ? 'default' : 'outline'}
+              className="flex-1"
+            >
+              👍 Like
+            </Button>
+            <Button
+              onClick={() => handleSampleAction(sample.id, false)}
+              size="sm"
+              variant={state === false ? 'destructive' : 'outline'}
+              className="flex-1"
+            >
+              👎 Dislike
+            </Button>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
 
             {/* Step 4: Complete */}
-            {currentStep === 4 && (
-              <div className="space-y-6 text-center">
-                <div className="p-8">
-                  <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle className="w-10 h-10 text-success" />
-                  </div>
-                  <h3 className="text-xl font-semibold mb-4">Welcome to AutoComment.AI!</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div className="p-4 bg-accent rounded-lg">
-                      <Badge variant="secondary" className="mb-2">Free Plan</Badge>
-                      <p className="text-2xl font-bold text-foreground">50</p>
-                      <p className="text-sm text-muted-foreground">Comments per month</p>
-                    </div>
-                    <div className="p-4 bg-accent rounded-lg">
-                      <Badge variant="outline" className="mb-2">Persona</Badge>
-                      <p className="text-lg font-semibold text-foreground">{data.persona}</p>
-                      <p className="text-sm text-muted-foreground">Active profile</p>
-                    </div>
-                  </div>
+{currentStep === 4 && (
+  <div className="space-y-6 text-center">
+    <div className="p-8">
+      <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 bg-primary/10">
+        <CheckCircle className="w-10 h-10 text-primary" />
+      </div>
+      <h3 className="text-xl font-semibold mb-4">Welcome to AutoComment.AI!</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="p-4 bg-accent rounded-lg">
+          <Badge variant="outline" className="mb-2">Tone</Badge>
+          <p className="text-lg font-semibold text-foreground">{prefs.toneStyle || '—'}</p>
+        </div>
+        <div className="p-4 bg-accent rounded-lg">
+          <Badge variant="outline" className="mb-2">Industry</Badge>
+          <p className="text-lg font-semibold text-foreground">{prefs.industryDomain || '—'}</p>
+        </div>
+        <div className="p-4 bg-accent rounded-lg">
+          <Badge variant="secondary" className="mb-2">Feedback</Badge>
+          <p className="text-lg font-semibold text-foreground">
+            {prefs.sampleFeedback.filter(s => s.liked === true).length} likes • {prefs.sampleFeedback.filter(s => s.liked === false).length} dislikes
+          </p>
+        </div>
+      </div>
 
-                  <div className="flex gap-4 justify-center">
-                    <Button asChild>
-                      <a href="/dashboard">
-                        Go to Dashboard
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </a>
-                    </Button>
-                    <Button variant="outline" asChild>
-                      <a href="/demo">Try Demo</a>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
+      <div className="flex gap-4 justify-center">
+        <Button asChild>
+          <a href="/dashboard">
+            Go to Dashboard
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </a>
+        </Button>
+      </div>
+    </div>
+  </div>
+)}
 
             {/* Navigation */}
             <div className="flex justify-between pt-6 border-t">
