@@ -9,9 +9,10 @@ import { Eye, EyeOff, Mail, Lock, User, UserPlus } from 'lucide-react'
 
 interface SignupProps {
   onToggleMode?: () => void
+  onSignupSuccess?: (email: string) => void
 }
 
-export function Signup({ onToggleMode }: SignupProps) {
+export function Signup({ onToggleMode, onSignupSuccess }: SignupProps) {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -43,6 +44,9 @@ export function Signup({ onToggleMode }: SignupProps) {
     const { error } = await signUp(email, password, fullName)
     if (error) {
       setError(error.message)
+    } else {
+      // Trigger success callback to show email helper
+      onSignupSuccess?.(email)
     }
   }
 
