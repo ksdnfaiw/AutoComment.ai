@@ -32,8 +32,8 @@ export const OnboardingWizard = () => {
 
   const samples: Sample[] = [
     { id: '1', text: 'Appreciate this perspective—clear, actionable insights that drive results.' },
-    { id: '2\', text: \'Great breakdown! Curious how you\'d apply this in a lean team setting.' },
-    { id: '3\', text: \'Strong take. I\'d add that execution speed often beats perfect strategy.' }
+    { id: '2', text: 'Great breakdown! Curious how you\'d apply this in a lean team setting.' },
+    { id: '3', text: 'Strong take. I\'d add that execution speed often beats perfect strategy.' }
   ];
 
   // Load existing preferences on mount
