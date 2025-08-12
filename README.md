@@ -71,3 +71,49 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+---
+
+## Supabase: Onboarding Preferences (examples)
+
+The `user_preferences` table is defined in `supabase-schema.sql`.
+
+JavaScript examples with `@supabase/supabase-js`:
+
+```ts
+// Get user
+const { data: { user } } = await supabase.auth.getUser();
+
+// Upsert tone style
+await supabase.from('user_preferences').upsert(
+  { user_id: user!.id, tone_style: 'Professional' },
+  { onConflict: 'user_id' }
+);
+
+// Upsert industry
+await supabase.from('user_preferences').upsert(
+  { user_id: user!.id, industry_domain: 'Tech' },
+  { onConflict: 'user_id' }
+);
+
+// Upsert sample feedback
+await supabase.from('user_preferences').upsert(
+  {
+    user_id: user!.id,
+    sample_feedback: [
+      { id: '1', text: '...', liked: true },
+      { id: '2', text: '...', liked: false },
+      { id: '3', text: '...', liked: true }
+    ]
+  },
+  { onConflict: 'user_id' }
+);
+
+// Read preferences
+const { data: prefs } = await supabase
+  .from('user_preferences')
+  .select('*')
+  .eq('user_id', user!.id)
+  .single();
+```
+
