@@ -1,14 +1,41 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Login } from '@/components/auth/Login'
 import { Signup } from '@/components/auth/Signup'
-import { MessageSquare } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { MessageSquare, CheckCircle } from 'lucide-react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function Auth() {
   const [mode, setMode] = useState<'login' | 'signup'>('login')
+  const [searchParams] = useSearchParams()
+  const [showConfirmed, setShowConfirmed] = useState(false)
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
   const toggleMode = () => {
     setMode(mode === 'login' ? 'signup' : 'login')
   }
+
+  // Handle email confirmation
+  useEffect(() => {
+    const confirmed = searchParams.get('confirmed')
+    if (confirmed === 'true') {
+      setShowConfirmed(true)
+      setMode('login')
+      // Remove the parameter from URL
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('confirmed')
+      window.history.replaceState({}, '', newUrl.toString())
+    }
+  }, [searchParams])
+
+  // Redirect authenticated users
+  useEffect(() => {
+    if (user) {
+      navigate('/onboarding')
+    }
+  }, [user, navigate])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/20 flex items-center justify-center p-4">
@@ -25,6 +52,16 @@ export function Auth() {
             AI-powered LinkedIn comment generation
           </p>
         </div>
+
+        {/* Email Confirmation Success */}
+        {showConfirmed && (
+          <Alert className="border-green-500 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              <strong>Email confirmed!</strong> Your account is now active. Please sign in to continue.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Auth Form */}
         {mode === 'login' ? (
