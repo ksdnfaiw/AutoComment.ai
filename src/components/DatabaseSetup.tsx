@@ -49,6 +49,12 @@ export function DatabaseSetup() {
       status: 'pending'
     },
     {
+      id: 'user_preferences',
+      title: 'Create User Preferences Table',
+      description: 'Onboarding and user preferences storage',
+      status: 'pending'
+    },
+    {
       id: 'triggers',
       title: 'Create Triggers',
       description: 'Automatic user profile creation',
@@ -149,34 +155,61 @@ export function DatabaseSetup() {
       `
       await executeSQL(commentsSQL, 'comments', 'Comments Table')
 
-      // Step 5: Setup RLS policies
+      // Step 5: Create user_preferences table
+      const userPreferencesSQL = `
+        create table if not exists public.user_preferences (
+          id uuid default gen_random_uuid() primary key,
+          user_id uuid references public.user_profiles(id) on delete cascade,
+          persona text,
+          email text,
+          sample_comment text,
+          onboarding_completed boolean default false,
+          onboarding_step integer default 1,
+          approved_comments text[],
+          rejected_comments text[],
+          extension_installed boolean default false,
+          created_at timestamp with time zone default now(),
+          updated_at timestamp with time zone default now()
+        );
+      `
+      await executeSQL(userPreferencesSQL, 'user_preferences', 'User Preferences Table')
+
+      // Step 6: Setup RLS policies
       const rlsSQL = `
         alter table public.user_profiles enable row level security;
         alter table public.personas enable row level security;
         alter table public.comments enable row level security;
-        
+        alter table public.user_preferences enable row level security;
+
         create policy if not exists "Users can view own profile" on public.user_profiles
           for select using (auth.uid() = id);
         create policy if not exists "Users can update own profile" on public.user_profiles
           for update using (auth.uid() = id);
         create policy if not exists "Users can insert own profile" on public.user_profiles
           for insert with check (auth.uid() = id);
-        
+
         create policy if not exists "Users can manage own personas" on public.personas
           for all using (auth.uid() = user_id);
-        
+
         create policy if not exists "Users can manage own comments" on public.comments
+          for all using (auth.uid() = user_id);
+
+        create policy if not exists "Users can manage own preferences" on public.user_preferences
           for all using (auth.uid() = user_id);
       `
       await executeSQL(rlsSQL, 'policies', 'Security Policies')
 
-      // Step 6: Create triggers
+      // Step 7: Create triggers
       const triggersSQL = `
         create or replace function public.handle_new_user()
         returns trigger as $$
         begin
           insert into public.user_profiles (id, full_name)
           values (new.id, new.raw_user_meta_data->>'full_name');
+
+          insert into public.user_preferences (user_id, email)
+          values (new.id, new.email);
+
           return new;
         end;
         $$ language plpgsql security definer;
