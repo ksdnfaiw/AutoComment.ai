@@ -72,6 +72,18 @@ export const OnboardingWizard = () => {
     }
   }, [user, preferencesLoading, navigate]);
 
+  // Show loading state
+  if (preferencesLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-accent/30 to-primary/10 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your preferences...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Load existing preferences
   useEffect(() => {
     if (preferences && !preferencesLoading) {
@@ -111,6 +123,11 @@ export const OnboardingWizard = () => {
       });
 
       if (result?.success) {
+        toast({
+          title: "Preferences saved!",
+          description: "Generating personalized comments for you...",
+        });
+
         // Mock API call to generate personalized comments
         setTimeout(() => {
           setData(prev => ({ ...prev, reviewedComments: mockComments }));
@@ -118,6 +135,11 @@ export const OnboardingWizard = () => {
           setLoading(false);
         }, 1500);
       } else {
+        toast({
+          title: "Save failed",
+          description: "There was an issue saving your preferences. Please try again.",
+          variant: "destructive",
+        });
         setLoading(false);
       }
     } else if (currentStep === 2) {
@@ -135,19 +157,60 @@ export const OnboardingWizard = () => {
       const approvedComments = data.reviewedComments.filter(c => c.approved).map(c => c.text);
       const rejectedComments = data.reviewedComments.filter(c => c.rejected).map(c => c.text);
 
-      await savePreferences({
+      setLoading(true);
+      const result = await savePreferences({
         approved_comments: approvedComments,
         rejected_comments: rejectedComments,
         onboarding_step: 3
       });
 
-      setCurrentStep(3);
+      if (result?.success) {
+        toast({
+          title: "Feedback saved!",
+          description: "Your comment preferences have been recorded.",
+        });
+        setCurrentStep(3);
+      } else {
+        toast({
+          title: "Save failed",
+          description: "There was an issue saving your feedback. Please try again.",
+          variant: "destructive",
+        });
+      }
+      setLoading(false);
     } else if (currentStep === 3) {
-      await updateOnboardingStep(4);
-      setCurrentStep(4);
+      setLoading(true);
+      const result = await updateOnboardingStep(4);
+      if (result?.success) {
+        setCurrentStep(4);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update progress. Please try again.",
+          variant: "destructive",
+        });
+      }
+      setLoading(false);
     } else if (currentStep === 4) {
-      await completeOnboarding();
-      navigate('/dashboard');
+      setLoading(true);
+      const result = await completeOnboarding();
+      if (result?.success) {
+        toast({
+          title: "Setup complete! 🎉",
+          description: "Welcome to AutoComment.AI! Redirecting to your dashboard...",
+        });
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
+      } else {
+        toast({
+          title: "Completion failed",
+          description: "There was an issue completing setup. You can still access the dashboard.",
+          variant: "destructive",
+        });
+        navigate('/dashboard');
+      }
+      setLoading(false);
     }
   };
 
