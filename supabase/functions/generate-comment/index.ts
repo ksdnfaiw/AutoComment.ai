@@ -126,17 +126,17 @@ serve(async (req) => {
 })
 
 async function generateAIComments(postContent: string, persona: string): Promise<Array<{text: string, confidence: number}>> {
-  const HF_TOKEN = Deno.env.get('HUGGING_FACE_TOKEN')
-  
+  const HF_TOKEN = Deno.env.get('HF_TOKEN')
+
   if (!HF_TOKEN) {
     // Fallback to predefined comments if no API token
     return generateFallbackComments(postContent, persona)
   }
 
   try {
-    // Use Hugging Face's free text generation model
+    // Use OpenAI-compatible API with Hugging Face Router
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
+      "https://router.huggingface.co/v1/chat/completions",
       {
         method: "POST",
         headers: {
@@ -144,42 +144,53 @@ async function generateAIComments(postContent: string, persona: string): Promise
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          inputs: `Generate a professional LinkedIn comment for this post: "${postContent}". Style: ${persona}`,
-          parameters: {
-            max_length: 100,
-            temperature: 0.7,
-            do_sample: true
-          }
+          model: "openai/gpt-oss-120b:fireworks-ai",
+          messages: [
+            {
+              role: "system",
+              content: `You are a professional LinkedIn comment generator. Generate authentic, thoughtful comments that match the ${persona} persona. Keep comments concise (2-3 sentences), professional, and engaging.`
+            },
+            {
+              role: "user",
+              content: `Generate 3 different professional LinkedIn comments for this post: "${postContent}". Make them sound authentic and ${persona}-like. Return only the comments, separated by "|||".`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 200
         }),
       }
     )
 
     if (!response.ok) {
-      throw new Error(`HF API error: ${response.status}`)
+      throw new Error(`HF Router API error: ${response.status}`)
     }
 
     const result = await response.json()
-    
+
     // Parse and format the response
     const comments = []
-    if (result && result[0] && result[0].generated_text) {
-      const text = result[0].generated_text.replace(postContent, '').trim()
-      comments.push({
-        text: text || "Great insights! This really resonates with my experience.",
-        confidence: Math.random() * 20 + 75 // 75-95% confidence
+    if (result && result.choices && result.choices[0] && result.choices[0].message) {
+      const content = result.choices[0].message.content
+      const commentTexts = content.split('|||').filter(c => c.trim())
+
+      commentTexts.slice(0, 3).forEach((text, index) => {
+        comments.push({
+          text: text.trim(),
+          confidence: Math.random() * 15 + 85 // 85-100% confidence for AI
+        })
       })
     }
 
-    // Generate 2 more comments with variations
-    for (let i = 0; i < 2; i++) {
-      const variations = await generateCommentVariation(postContent, persona, i)
-      comments.push(variations)
+    // If we don't get 3 comments, fill with variations
+    while (comments.length < 3) {
+      const variation = await generateCommentVariation(postContent, persona, comments.length)
+      comments.push(variation)
     }
 
     return comments.slice(0, 3)
 
   } catch (error) {
-    console.error('HF API error, using fallback:', error)
+    console.error('HF Router API error, using fallback:', error)
     return generateFallbackComments(postContent, persona)
   }
 }
