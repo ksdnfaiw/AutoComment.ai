@@ -40,10 +40,10 @@ serve(async (req) => {
       )
     }
 
-    // Check user tokens
+    // Check user tokens and rate limits
     const { data: profile, error: profileError } = await supabaseClient
       .from('user_profiles')
-      .select('tokens_remaining')
+      .select('tokens_remaining, hourly_request_limit, daily_request_limit')
       .eq('user_id', user.id)
       .single()
 
@@ -51,6 +51,44 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Insufficient tokens' }),
         { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check hourly rate limit
+    const { data: hourlyCheck, error: hourlyError } = await supabaseClient
+      .rpc('check_rate_limit', {
+        p_user_id: user.id,
+        p_action_type: 'comment_generation',
+        p_max_requests: profile.hourly_request_limit || 10,
+        p_window_minutes: 60
+      })
+
+    if (hourlyError || !hourlyCheck) {
+      return new Response(
+        JSON.stringify({
+          error: 'Rate limit exceeded',
+          details: 'Hourly request limit reached. Please try again later.'
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check daily rate limit
+    const { data: dailyCheck, error: dailyError } = await supabaseClient
+      .rpc('check_rate_limit', {
+        p_user_id: user.id,
+        p_action_type: 'daily_comment_generation',
+        p_max_requests: profile.daily_request_limit || 50,
+        p_window_minutes: 1440 // 24 hours
+      })
+
+    if (dailyError || !dailyCheck) {
+      return new Response(
+        JSON.stringify({
+          error: 'Rate limit exceeded',
+          details: 'Daily request limit reached. Please upgrade your plan or try again tomorrow.'
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
