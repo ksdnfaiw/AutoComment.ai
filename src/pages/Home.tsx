@@ -47,12 +47,14 @@ export const Home = () => {
 
             <div className="flex flex-wrap justify-center gap-4 mb-8">
               <Button 
-                onClick={() => setShowOnboarding(true)}
+                asChild
                 size="lg"
                 className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
               >
-                <Play className="w-5 h-5 mr-2" />
-                Start Free Now
+                <a href="/auth">
+                  <Play className="w-5 h-5 mr-2" />
+                  Start Free Now
+                </a>
               </Button>
               <Button 
                 asChild
@@ -136,12 +138,14 @@ export const Home = () => {
                   Join hundreds of professionals already using AutoComment.AI
                 </p>
                 <Button 
-                  onClick={() => setShowOnboarding(true)}
+                  asChild
                   className="w-full"
                   size="lg"
                 >
-                  Get Started Free
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <a href="/auth">
+                    Get Started Free
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </a>
                 </Button>
               </div>
             </div>

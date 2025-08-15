@@ -1,29 +1,13 @@
-import { getSupabaseClient } from "@/lib/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export type SampleFeedback = { id: string; text: string; liked?: boolean };
 
 export const useOnboardingPreferences = () => {
   const { toast } = useToast();
-  const supabase = getSupabaseClient();
-
-  const ensure = () => {
-    if (!supabase) {
-      toast({
-        title: "Connect Supabase",
-        description:
-          "Click the green Supabase button (top-right) to connect your project, then retry.",
-        variant: "destructive",
-      });
-      return null;
-    }
-    return supabase;
-  };
 
   const getUserId = async () => {
-    const s = ensure();
-    if (!s) return null;
-    const { data, error } = await s.auth.getUser();
+    const { data, error } = await supabase.auth.getUser();
     if (error || !data?.user) {
       toast({
         title: "Sign in required",
@@ -40,14 +24,12 @@ export const useOnboardingPreferences = () => {
     industry_domain?: string;
     sample_feedback?: SampleFeedback[];
   }) => {
-    const s = ensure();
-    if (!s) return;
     const userId = await getUserId();
     if (!userId) return;
 
     const payload: any = { user_id: userId, ...partial };
 
-    const { error } = await s
+    const { error } = await supabase
       .from("user_preferences")
       .upsert(payload, { onConflict: "user_id" });
 
@@ -63,11 +45,9 @@ export const useOnboardingPreferences = () => {
     saveIndustryDomain: async (industry: string) => upsert({ industry_domain: industry }),
     saveSampleFeedback: async (feedback: SampleFeedback[]) => upsert({ sample_feedback: feedback }),
     loadPreferences: async () => {
-      const s = ensure();
-      if (!s) return null;
       const userId = await getUserId();
       if (!userId) return null;
-      const { data, error } = await s
+      const { data, error } = await supabase
         .from("user_preferences")
         .select("*")
         .eq("user_id", userId)
