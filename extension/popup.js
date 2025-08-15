@@ -104,10 +104,10 @@ async function loadUserStatus() {
   }
   
   // Set up dashboard link
-  dashboardBtn.href = 'https://your-app-domain.com/dashboard';
+  dashboardBtn.href = 'https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/dashboard';
   dashboardBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    chrome.tabs.create({ url: 'https://your-app-domain.com/dashboard' });
+    chrome.tabs.create({ url: 'https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/dashboard' });
     window.close();
   });
   
