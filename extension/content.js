@@ -5,7 +5,7 @@
   'use strict';
 
   // Configuration
-  const API_BASE_URL = 'https://your-supabase-project.supabase.co';
+  const API_BASE_URL = 'https://fatssalzlbpjilxpfuhw.supabase.co';
   
   const BUTTON_HTML = `
     <button 
