@@ -118,6 +118,36 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          comment_text: string
+          created_at: string
+          id: string
+          persona_used: string | null
+          post_content: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          comment_text: string
+          created_at?: string
+          id?: string
+          persona_used?: string | null
+          post_content: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          comment_text?: string
+          created_at?: string
+          id?: string
+          persona_used?: string | null
+          post_content?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       linkedin_posts: {
         Row: {
           author_name: string | null
