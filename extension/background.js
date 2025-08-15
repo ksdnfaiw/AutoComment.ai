@@ -5,7 +5,7 @@ chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === 'install') {
     // Open welcome page on first install
     chrome.tabs.create({
-      url: 'https://your-app-domain.com/auth?source=extension'
+      url: 'https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/auth?source=extension'
     });
   } else if (details.reason === 'update') {
     // Handle extension updates
