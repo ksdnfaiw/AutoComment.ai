@@ -88,7 +88,7 @@
       
       <div class="autocomment-login" style="display: none; text-align: center; padding: 20px;">
         <p style="margin: 0 0 12px; color: #6b7280; font-size: 14px;">Please log in to use AutoComment.AI</p>
-        <a href="${API_BASE_URL.replace('https://your-supabase-project.supabase.co', 'https://your-app-domain.com')}/auth" 
+        <a href="https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/auth" 
            target="_blank" 
            style="
              background: #3b82f6;
