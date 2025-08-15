@@ -241,7 +241,7 @@ export const Dashboard = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Token Display */}
-            <TokenDisplay current={tokens.current} total={tokens.total} />
+            <TokenDisplay />
 
             {/* Persona Settings */}
             <Card>
