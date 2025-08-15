@@ -35,7 +35,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true; // Will respond asynchronously
       
     case 'open_dashboard':
-      chrome.tabs.create({ url: 'https://your-app-domain.com/dashboard' });
+      chrome.tabs.create({ url: 'https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/dashboard' });
       sendResponse({ success: true });
       break;
       
