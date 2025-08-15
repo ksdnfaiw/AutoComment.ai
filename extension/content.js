@@ -370,7 +370,7 @@
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authData.supabase_auth.access_token}`,
-          'apikey': 'your-supabase-anon-key'
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhdHNzYWx6bGJwamlseHBmdWh3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ5MDM0OTUsImV4cCI6MjA3MDQ3OTQ5NX0.eO4CwmtALYv1Nf9dhrMlucqnFtwyKxfC53dnjQ6_wyI'
         },
         body: JSON.stringify({ feedback })
       });
