@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -74,19 +75,12 @@ All colors MUST be HSL for consistency. Premium gradients and effects included.
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -136,5 +130,35 @@ All colors MUST be HSL for consistency. Premium gradients and effects included.
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Premium Button Animations and Effects */
+@layer components {
+  .btn-premium {
+    @apply relative overflow-hidden transition-all duration-300;
+  }
+  
+  .btn-premium::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+  }
+  
+  .btn-premium:hover::before {
+    transform: translateX(100%);
+  }
+  
+  .gradient-border {
+    @apply relative;
+  }
+  
+  .gradient-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-xl p-0.5;
+    background: linear-gradient(135deg, hsl(217, 91%, 59%), hsl(200, 95%, 45%));
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
   }
 }

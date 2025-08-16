@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,7 +7,7 @@ import { PremiumFeatures } from '@/components/PremiumFeatures';
 import { EmailVerificationFix } from '@/components/EmailVerificationFix';
 import { UserMenu } from '@/components/UserMenu';
 import { useAuth } from '@/contexts/AuthContext';
-import { MessageSquare, Sparkles, Shield, Zap, Play, Star, Users, ArrowRight, CheckCircle } from 'lucide-react';
+import { MessageSquare, Sparkles, Shield, Zap, Play, Star, Users, ArrowRight, CheckCircle, Download, Chrome } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Home = () => {
@@ -33,6 +34,7 @@ export const Home = () => {
           </div>
         </div>
       </header>
+
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/20">
         <div className="container mx-auto px-4 py-16 lg:py-24">
@@ -64,25 +66,41 @@ export const Home = () => {
               </div>
             </div>
 
+            {/* Premium Action Buttons */}
             <div className="flex flex-wrap justify-center gap-4 mb-8">
-
               {user ? (
                 <>
                   <Button
                     asChild
                     size="lg"
-                    className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
+                    className="bg-gradient-primary hover:shadow-glow text-primary-foreground font-semibold text-lg px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-xl"
                   >
                     <Link to="/dashboard">
                       <Play className="w-5 h-5 mr-2" />
                       Go to Dashboard
                     </Link>
                   </Button>
+                  
+                  {/* Chrome Extension CTA for authenticated users */}
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-1 rounded-xl shadow-xl">
+                    <Button
+                      asChild
+                      variant="secondary"
+                      size="lg"
+                      className="bg-background hover:bg-accent text-foreground font-semibold text-lg px-8 py-4 rounded-lg"
+                    >
+                      <a href="https://chrome.google.com/webstore" target="_blank" rel="noopener noreferrer">
+                        <Chrome className="w-5 h-5 mr-2" />
+                        Download Extension
+                      </a>
+                    </Button>
+                  </div>
+                  
                   <Button
                     asChild
                     variant="outline"
                     size="lg"
-                    className="text-lg px-8 py-3"
+                    className="text-lg px-8 py-4 rounded-xl border-2 hover:bg-accent/20 transition-all duration-300"
                   >
                     <Link to="/onboarding">Setup Wizard</Link>
                   </Button>
@@ -92,7 +110,7 @@ export const Home = () => {
                   <Button
                     asChild
                     size="lg"
-                    className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
+                    className="bg-gradient-primary hover:shadow-glow text-primary-foreground font-semibold text-lg px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 shadow-xl"
                   >
                     <Link to="/auth">
                       <Play className="w-5 h-5 mr-2" />
@@ -103,32 +121,12 @@ export const Home = () => {
                     asChild
                     variant="outline"
                     size="lg"
-                    className="text-lg px-8 py-3"
+                    className="text-lg px-8 py-4 rounded-xl border-2 hover:bg-accent/20 transition-all duration-300"
                   >
                     <Link to="/demo">Watch Demo</Link>
                   </Button>
                 </>
               )}
-
-              <Button 
-                asChild
-                size="lg"
-                className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
-              >
-                <a href="/auth">
-                  <Play className="w-5 h-5 mr-2" />
-                  Start Free Now
-                </a>
-              </Button>
-              <Button 
-                asChild
-                variant="outline"
-                size="lg"
-                className="text-lg px-8 py-3"
-              >
-                <a href="/demo">Watch Demo</a>
-              </Button>
-
             </div>
 
             {/* Social Proof */}
@@ -195,7 +193,7 @@ export const Home = () => {
               </div>
             </div>
             
-            <div className="bg-gradient-to-br from-primary/10 to-accent/20 p-8 rounded-lg">
+            <div className="bg-gradient-card p-8 rounded-xl border shadow-lg">
               <div className="text-center">
                 <MessageSquare className="w-16 h-16 mx-auto mb-4 text-primary" />
                 <h3 className="text-xl font-semibold mb-2">Ready to try it?</h3>
@@ -206,7 +204,7 @@ export const Home = () => {
                 {user ? (
                   <Button
                     asChild
-                    className="w-full"
+                    className="w-full bg-gradient-primary hover:shadow-glow text-primary-foreground font-semibold rounded-xl transition-all duration-300"
                     size="lg"
                   >
                     <Link to="/dashboard">
@@ -217,7 +215,7 @@ export const Home = () => {
                 ) : (
                   <Button
                     asChild
-                    className="w-full"
+                    className="w-full bg-gradient-primary hover:shadow-glow text-primary-foreground font-semibold rounded-xl transition-all duration-300"
                     size="lg"
                   >
                     <Link to="/auth">
@@ -226,18 +224,6 @@ export const Home = () => {
                     </Link>
                   </Button>
                 )}
-
-                <Button 
-                  asChild
-                  className="w-full"
-                  size="lg"
-                >
-                  <a href="/auth">
-                    Get Started Free
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </a>
-                </Button>
-
               </div>
             </div>
           </div>
@@ -254,8 +240,8 @@ export const Home = () => {
             
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center group">
-                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  <span className="text-primary font-bold text-xl">1</span>
+                <div className="w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:shadow-glow transition-all duration-300">
+                  <span className="text-primary-foreground font-bold text-xl">1</span>
                 </div>
                 <h3 className="font-semibold text-foreground mb-2 text-lg">Install & Browse</h3>
                 <p className="text-muted-foreground">
@@ -264,8 +250,8 @@ export const Home = () => {
               </div>
               
               <div className="text-center group">
-                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  <span className="text-primary font-bold text-xl">2</span>
+                <div className="w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:shadow-glow transition-all duration-300">
+                  <span className="text-primary-foreground font-bold text-xl">2</span>
                 </div>
                 <h3 className="font-semibold text-foreground mb-2 text-lg">AI Generates</h3>
                 <p className="text-muted-foreground">
@@ -274,8 +260,8 @@ export const Home = () => {
               </div>
               
               <div className="text-center group">
-                <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
-                  <span className="text-primary font-bold text-xl">3</span>
+                <div className="w-16 h-16 bg-gradient-primary rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:shadow-glow transition-all duration-300">
+                  <span className="text-primary-foreground font-bold text-xl">3</span>
                 </div>
                 <h3 className="font-semibold text-foreground mb-2 text-lg">Auto-Fill & Post</h3>
                 <p className="text-muted-foreground">
@@ -292,6 +278,66 @@ export const Home = () => {
         <PremiumFeatures />
       </div>
 
+      {/* Chrome Extension Promotion for Authenticated Users */}
+      {user && (
+        <div className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 py-16">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-1 rounded-2xl inline-block mb-6">
+                <div className="bg-background p-8 rounded-xl">
+                  <Chrome className="w-16 h-16 mx-auto mb-4 text-blue-600" />
+                  <h2 className="text-3xl font-bold text-foreground mb-4">
+                    Ready for the Next Level?
+                  </h2>
+                  <p className="text-lg text-muted-foreground mb-6 max-w-2xl mx-auto">
+                    Install our Chrome extension to get AI comment suggestions directly on LinkedIn. 
+                    Works seamlessly with your account and saves you hours of networking time.
+                  </p>
+                  
+                  <div className="flex flex-wrap justify-center gap-4">
+                    <Button
+                      asChild
+                      size="lg"
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-glow text-white font-semibold text-lg px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105"
+                    >
+                      <a href="https://chrome.google.com/webstore" target="_blank" rel="noopener noreferrer">
+                        <Download className="w-5 h-5 mr-2" />
+                        Install Chrome Extension
+                      </a>
+                    </Button>
+                    
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="lg"
+                      className="text-lg px-8 py-4 rounded-xl border-2"
+                    >
+                      <Link to="/demo">
+                        See How It Works
+                      </Link>
+                    </Button>
+                  </div>
+                  
+                  <div className="mt-6 flex justify-center items-center gap-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4 text-success" />
+                      <span>Free to install</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4 text-success" />
+                      <span>Works with your plan</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CheckCircle className="w-4 h-4 text-success" />
+                      <span>Instant setup</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
