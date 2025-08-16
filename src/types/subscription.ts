@@ -44,52 +44,49 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     price: 0,
     period: '/month',
     tokensPerMonth: 50,
-    tokensPerHour: 10,
+    tokensPerHour: 3,
     features: [
-      '50 AI comments per month',
-      '10 comments per hour',
-      'Basic personas',
-      'Comment history',
+      '50 comments per month',
+      '3 professional personas',
+      'Basic analytics',
+      'Chrome extension',
       'Email support'
     ]
   },
   {
     id: 'pro',
-    name: 'Professional',
-    description: 'For active LinkedIn users',
-    price: 19,
+    name: 'Pro',
+    description: 'For active networkers',
+    price: 10,
     period: '/month',
     tokensPerMonth: 500,
     tokensPerHour: 50,
     isPopular: true,
     features: [
-      '500 AI comments per month',
-      '50 comments per hour',
-      'Advanced personas',
-      'Priority AI generation',
+      '500 comments per month',
+      'Unlimited personas',
       'Advanced analytics',
-      'Custom templates',
-      'Priority support'
+      'Priority support',
+      'Custom training',
+      'Team collaboration'
     ],
     stripePriceId: 'price_pro_monthly'
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    description: 'For teams and power users',
-    price: 49,
-    period: '/month',
-    tokensPerMonth: 2000,
-    tokensPerHour: 200,
+    description: 'For teams and agencies',
+    price: 0,
+    period: ' - Custom',
+    tokensPerMonth: 999999,
+    tokensPerHour: 9999,
     features: [
-      '2000 AI comments per month',
-      '200 comments per hour',
-      'Custom personas',
-      'White-label options',
-      'Team management',
+      'Unlimited comments',
+      'White-label solution',
       'API access',
-      'Advanced analytics',
-      'Dedicated support'
+      'Dedicated support',
+      'Custom integrations',
+      'Advanced reporting'
     ],
     stripePriceId: 'price_enterprise_monthly'
   }
