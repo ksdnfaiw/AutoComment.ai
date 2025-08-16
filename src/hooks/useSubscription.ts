@@ -54,7 +54,7 @@ export const useSubscription = () => {
   // Check if user has access to a feature based on their plan
   const hasFeatureAccess = (feature: string): boolean => {
     if (!subscription || !currentPlan) return false;
-    
+
     // Basic feature checks
     switch (feature) {
       case 'advanced_personas':
@@ -66,6 +66,10 @@ export const useSubscription = () => {
       case 'team_management':
         return currentPlan.id === 'enterprise';
       case 'priority_support':
+        return currentPlan.id !== 'free';
+      case 'manual_refresh':
+        return currentPlan.id !== 'free';
+      case 'advanced_analytics':
         return currentPlan.id !== 'free';
       default:
         return true;
