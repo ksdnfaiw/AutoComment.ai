@@ -137,8 +137,12 @@ export const PricingModal = ({ open, onOpenChange }: PricingModalProps) => {
                       "Processing..."
                     ) : isCurrentPlan ? (
                       "Current Plan"
-                    ) : plan.price === 0 ? (
-                      "Downgrade to Free"
+                    ) : plan.id === 'free' ? (
+                      "Get Started Free"
+                    ) : plan.id === 'enterprise' ? (
+                      "Contact Sales"
+                    ) : plan.isPopular ? (
+                      "Start Pro Trial"
                     ) : (
                       <>
                         {currentPlan?.id === 'free' ? 'Upgrade' : 'Switch'} to {plan.name}
