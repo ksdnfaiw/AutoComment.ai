@@ -95,11 +95,11 @@ export const PricingModal = ({ open, onOpenChange }: PricingModalProps) => {
                   
                   <div className="py-4">
                     <span className="text-4xl font-bold">
-                      {plan.price === 0 ? 'Free' : `$${plan.price}`}
+                      {plan.id === 'enterprise' ? 'Custom' : plan.price === 0 ? '$0' : `$${plan.price}`}
                     </span>
-                    {plan.price > 0 && (
-                      <span className="text-muted-foreground text-sm">/month</span>
-                    )}
+                    <span className="text-muted-foreground text-sm">
+                      {plan.id === 'enterprise' ? '' : '/month'}
+                    </span>
                   </div>
                   
                   <CardDescription>{plan.description}</CardDescription>
