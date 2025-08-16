@@ -21,6 +21,57 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
 
+  // Ensure user profile exists with proper token allocation for free plan
+  const ensureUserProfile = async (user: User) => {
+    try {
+      // Check if profile already exists
+      const { data: existingProfile, error: selectError } = await supabase
+        .from('user_profiles')
+        .select('id, tokens_limit, tokens_used, subscription_tier')
+        .eq('id', user.id)
+        .single()
+
+      if (selectError && selectError.code !== 'PGRST116') {
+        // Error other than "not found"
+        console.error('Error checking user profile:', selectError)
+        return
+      }
+
+      if (!existingProfile) {
+        // Create new profile with free plan token allocation
+        const { error: insertError } = await supabase
+          .from('user_profiles')
+          .insert({
+            id: user.id,
+            full_name: user.user_metadata?.full_name || '',
+            subscription_tier: 'free',
+            tokens_limit: 50,
+            tokens_used: 0
+          })
+
+        if (insertError) {
+          console.error('Error creating user profile:', insertError)
+        }
+      } else if (!existingProfile.tokens_limit && !existingProfile.subscription_tier) {
+        // Update existing profile with missing token fields
+        const { error: updateError } = await supabase
+          .from('user_profiles')
+          .update({
+            subscription_tier: 'free',
+            tokens_limit: 50,
+            tokens_used: 0
+          })
+          .eq('id', user.id)
+
+        if (updateError) {
+          console.error('Error updating user profile:', updateError)
+        }
+      }
+    } catch (error) {
+      console.error('Error ensuring user profile:', error)
+    }
+  }
+
   useEffect(() => {
     // Get initial session
     const getSession = async () => {
