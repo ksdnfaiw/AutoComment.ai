@@ -3,10 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { OnboardingWizard } from '@/components/OnboardingWizard';
 import { PremiumFeatures } from '@/components/PremiumFeatures';
+import { EmailVerificationFix } from '@/components/EmailVerificationFix';
+import { UserMenu } from '@/components/UserMenu';
+import { useAuth } from '@/contexts/AuthContext';
 import { MessageSquare, Sparkles, Shield, Zap, Play, Star, Users, ArrowRight, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export const Home = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const { user } = useAuth();
 
   if (showOnboarding) {
     return <OnboardingWizard />;
@@ -14,6 +19,20 @@ export const Home = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b border-border/40">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-6 h-6 text-primary" />
+              <span className="text-xl font-bold">
+                AutoComment<span className="text-primary">.AI</span>
+              </span>
+            </div>
+            <UserMenu />
+          </div>
+        </div>
+      </header>
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/20">
         <div className="container mx-auto px-4 py-16 lg:py-24">
@@ -46,6 +65,51 @@ export const Home = () => {
             </div>
 
             <div className="flex flex-wrap justify-center gap-4 mb-8">
+
+              {user ? (
+                <>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
+                  >
+                    <Link to="/dashboard">
+                      <Play className="w-5 h-5 mr-2" />
+                      Go to Dashboard
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="text-lg px-8 py-3"
+                  >
+                    <Link to="/onboarding">Setup Wizard</Link>
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
+                  >
+                    <Link to="/auth">
+                      <Play className="w-5 h-5 mr-2" />
+                      Start Free Now
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="lg"
+                    className="text-lg px-8 py-3"
+                  >
+                    <Link to="/demo">Watch Demo</Link>
+                  </Button>
+                </>
+              )}
+
               <Button 
                 asChild
                 size="lg"
@@ -64,6 +128,7 @@ export const Home = () => {
               >
                 <a href="/demo">Watch Demo</a>
               </Button>
+
             </div>
 
             {/* Social Proof */}
@@ -137,6 +202,31 @@ export const Home = () => {
                 <p className="text-muted-foreground mb-4">
                   Join hundreds of professionals already using AutoComment.AI
                 </p>
+
+                {user ? (
+                  <Button
+                    asChild
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Link to="/dashboard">
+                      Go to Dashboard
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    asChild
+                    className="w-full"
+                    size="lg"
+                  >
+                    <Link to="/auth">
+                      Get Started Free
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                )}
+
                 <Button 
                   asChild
                   className="w-full"
@@ -147,6 +237,7 @@ export const Home = () => {
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </a>
                 </Button>
+
               </div>
             </div>
           </div>
@@ -200,6 +291,7 @@ export const Home = () => {
       <div className="container mx-auto px-4 py-16">
         <PremiumFeatures />
       </div>
+
     </div>
   );
 };

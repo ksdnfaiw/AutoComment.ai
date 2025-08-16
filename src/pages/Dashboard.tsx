@@ -6,49 +6,19 @@ import { Badge } from '@/components/ui/badge';
 import { TokenDisplay } from '@/components/TokenDisplay';
 import { PersonaSelect } from '@/components/PersonaSelect';
 import { useToast } from '@/hooks/use-toast';
-import { RefreshCw, Settings, TrendingUp, MessageSquare, Calendar } from 'lucide-react';
-
-interface CommentHistory {
-  id: string;
-  post: string;
-  comment: string;
-  feedback: 'approved' | 'rejected';
-  date: string;
-}
+import { useCommentHistory, useUserStats } from '@/hooks/useSupabaseData';
+import { RefreshCw, Settings, TrendingUp, MessageSquare, Calendar, Plus, Database } from 'lucide-react';
 
 export const Dashboard = () => {
   const [tokens, setTokens] = useState({ current: 47, total: 50 });
   const [persona, setPersona] = useState('saas-founder');
-  const [commentHistory, setCommentHistory] = useState<CommentHistory[]>([]);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+  const [testPost, setTestPost] = useState('AI is transforming how we build SaaS products...');
+  const [testComment, setTestComment] = useState('Absolutely! AI automation saves us hours daily in our development process.');
 
-  useEffect(() => {
-    // Mock comment history data
-    setCommentHistory([
-      {
-        id: '1',
-        post: 'AI is transforming how we build SaaS products...',
-        comment: 'Absolutely! AI automation saves us hours daily in our development process.',
-        feedback: 'approved',
-        date: '2024-01-07'
-      },
-      {
-        id: '2',
-        post: 'The future of marketing is data-driven...',
-        comment: 'Great insights! We\'ve seen similar results with our AI-driven campaigns.',
-        feedback: 'approved',
-        date: '2024-01-06'
-      },
-      {
-        id: '3',
-        post: 'Startup funding in 2024...',
-        comment: 'This perspective aligns with what we\'re seeing in the SaaS space.',
-        feedback: 'rejected',
-        date: '2024-01-05'
-      }
-    ]);
-  }, []);
+  const { toast } = useToast();
+  const { commentHistory, loading: commentsLoading, error: commentsError, refetch, addComment } = useCommentHistory();
+  const { stats, loading: statsLoading } = useUserStats();
 
   const refreshTokens = async () => {
     setLoading(true);
@@ -69,9 +39,28 @@ export const Dashboard = () => {
       title: "Persona updated!",
       description: "Your comment style will be adjusted to match your new persona.",
     });
-    
+
     // Mock API call to n8n webhook
     console.log('Updated persona:', persona);
+  };
+
+  const addTestComment = async () => {
+    setLoading(true);
+    const result = await addComment(testPost, testComment);
+
+    if (result.success) {
+      toast({
+        title: "Comment added!",
+        description: "Test comment has been added to your database.",
+      });
+    } else {
+      toast({
+        title: "Error adding comment",
+        description: result.error || "Failed to add comment to database.",
+        variant: "destructive",
+      });
+    }
+    setLoading(false);
   };
 
   const getFeedbackBadge = (feedback: string) => {
@@ -122,7 +111,9 @@ export const Dashboard = () => {
                       <MessageSquare className="w-5 h-5 text-primary" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-card-foreground">127</p>
+                      <p className="text-2xl font-bold text-card-foreground">
+                        {statsLoading ? '...' : stats.totalComments}
+                      </p>
                       <p className="text-sm text-muted-foreground">Comments Generated</p>
                     </div>
                   </div>
@@ -136,7 +127,9 @@ export const Dashboard = () => {
                       <TrendingUp className="w-5 h-5 text-success" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-card-foreground">89%</p>
+                      <p className="text-2xl font-bold text-card-foreground">
+                        {statsLoading ? '...' : `${stats.approvalRate}%`}
+                      </p>
                       <p className="text-sm text-muted-foreground">Approval Rate</p>
                     </div>
                   </div>
@@ -150,7 +143,9 @@ export const Dashboard = () => {
                       <Calendar className="w-5 h-5 text-warning" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold text-card-foreground">23</p>
+                      <p className="text-2xl font-bold text-card-foreground">
+                        {statsLoading ? '...' : stats.daysActive}
+                      </p>
                       <p className="text-sm text-muted-foreground">Days Active</p>
                     </div>
                   </div>
@@ -161,38 +156,84 @@ export const Dashboard = () => {
             {/* Comment History */}
             <Card>
               <CardHeader>
-                <CardTitle>Comment History</CardTitle>
-                <CardDescription>
-                  Your recent AI-generated comments and their feedback
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Database className="w-5 h-5" />
+                      Comment History
+                      {commentsLoading && <RefreshCw className="w-4 h-4 animate-spin" />}
+                    </CardTitle>
+                    <CardDescription>
+                      Your recent AI-generated comments from Supabase database
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={refetch}
+                    variant="outline"
+                    size="sm"
+                    disabled={commentsLoading}
+                  >
+                    <RefreshCw className={`w-4 h-4 ${commentsLoading ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Post</TableHead>
-                      <TableHead>Comment</TableHead>
-                      <TableHead>Feedback</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {commentHistory.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="max-w-xs">
-                          <p className="truncate text-sm">{item.post}</p>
-                        </TableCell>
-                        <TableCell className="max-w-sm">
-                          <p className="truncate text-sm">{item.comment}</p>
-                        </TableCell>
-                        <TableCell>{getFeedbackBadge(item.feedback)}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {new Date(item.date).toLocaleDateString()}
-                        </TableCell>
+                {commentsError ? (
+                  <div className="text-center py-8">
+                    <div className="text-red-600 mb-2">❌ {commentsError}</div>
+                    <Button onClick={addTestComment} disabled={loading} className="mr-2">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Add Test Comment
+                    </Button>
+                    <Button onClick={refetch} variant="outline">
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Post</TableHead>
+                        <TableHead>Comment</TableHead>
+                        <TableHead>Feedback</TableHead>
+                        <TableHead>Date</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {commentHistory.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-8">
+                            <div className="text-muted-foreground">
+                              No comments found in database.
+                              <div className="mt-2">
+                                <Button onClick={addTestComment} disabled={loading}>
+                                  <Plus className="w-4 h-4 mr-1" />
+                                  Add Test Comment
+                                </Button>
+                              </div>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        commentHistory.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell className="max-w-xs">
+                              <p className="truncate text-sm">{item.post_content}</p>
+                            </TableCell>
+                            <TableCell className="max-w-sm">
+                              <p className="truncate text-sm">{item.generated_comment}</p>
+                            </TableCell>
+                            <TableCell>{getFeedbackBadge(item.feedback)}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {new Date(item.created_at).toLocaleDateString()}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -200,7 +241,7 @@ export const Dashboard = () => {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Token Display */}
-            <TokenDisplay current={tokens.current} total={tokens.total} />
+            <TokenDisplay />
 
             {/* Persona Settings */}
             <Card>

@@ -9,7 +9,7 @@ import { MessageSquare, Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
-export const Auth = () => {
+const Auth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
@@ -280,3 +280,5 @@ export const Auth = () => {
     </div>
   );
 };
+
+export default Auth;
