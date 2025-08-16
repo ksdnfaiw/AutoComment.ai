@@ -44,7 +44,12 @@ export const OnboardingWizard = () => {
         setPrefs({
           toneStyle: existingPrefs.tone_style || '',
           industryDomain: existingPrefs.industry_domain || '',
-          sampleFeedback: existingPrefs.sample_feedback || []
+          sampleFeedback: Array.isArray(existingPrefs.sample_feedback) ? 
+            existingPrefs.sample_feedback.map((item: any) => ({
+              id: item.id || String(Math.random()),
+              text: item.text || '',
+              liked: item.liked
+            })) : []
         });
       }
     };

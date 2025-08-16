@@ -1,8 +1,8 @@
-import { LinkedInButton } from '@/components/LinkedInButton';
+import { CommentGenerator } from '@/components/CommentGenerator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { User, Heart, MessageSquare, Send, MoreHorizontal, RefreshCw } from 'lucide-react';
+import { User, Heart, MessageSquare, Send, MoreHorizontal, RefreshCw, Chrome, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -112,9 +112,23 @@ export const Demo = () => {
               </p>
             </div>
 
-            {/* AutoComment.AI Button Demo */}
-            <div className="mb-4">
-              <LinkedInButton postContent={currentPost} />
+            {/* Chrome Extension CTA */}
+            <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-3">
+                <Chrome className="w-8 h-8 text-blue-600" />
+                <div className="flex-1">
+                  <h4 className="font-semibold text-blue-900">Get Instant AI Comments on LinkedIn</h4>
+                  <p className="text-sm text-blue-700">Download our Chrome extension for real-time comment suggestions</p>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => window.open('https://chrome.google.com/webstore', '_blank')}
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  Install
+                </Button>
+              </div>
             </div>
 
             {/* LinkedIn Engagement Bar */}
@@ -159,31 +173,9 @@ export const Demo = () => {
           </CardContent>
         </Card>
 
-        {/* Instructions */}
+        {/* Live Comment Generator */}
         <div className="mt-8 max-w-2xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle>How to Use</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                <p>Click the blue "Suggest Comments" button above to see AI-generated comments</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">2</span>
-                <p>Review the 2-3 comment suggestions in the popup</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">3</span>
-                <p>Click "Approve" to copy the comment to your clipboard, or "Reject" to provide feedback</p>
-              </div>
-              <div className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-bold">4</span>
-                <p>Paste the approved comment in LinkedIn's comment box</p>
-              </div>
-            </CardContent>
-          </Card>
+          <CommentGenerator defaultPost={currentPost} />
         </div>
       </div>
     </div>

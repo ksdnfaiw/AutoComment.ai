@@ -73,15 +73,14 @@ export const useAIComments = () => {
 
     try {
       const { error } = await supabase
-        .from('comment_history')
-        .update({ 
+        .from('comments')
+        .insert({ 
+          user_id: user.id,
+          post_content: postContent.substring(0, 500),
+          generated_comment: commentText,
           feedback,
-          approved_comment: feedback === 'approved' ? commentText : null
-        })
-        .eq('user_id', user.id)
-        .eq('post_content', postContent.substring(0, 500))
-        .order('created_at', { ascending: false })
-        .limit(1);
+          persona_used: 'Professional'
+        });
 
       if (error) {
         console.error('Error recording feedback:', error);

@@ -4,13 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
+import { TokenDisplay } from '@/components/TokenDisplay';
 import { PricingModal } from '@/components/PricingModal';
 import { AnalyticsCard } from '@/components/AnalyticsCard';
 import { PersonaSelect } from '@/components/PersonaSelect';
 import { useToast } from '@/hooks/use-toast';
 import { useCommentHistory, useUserStats } from '@/hooks/useSupabaseData';
 import { useSubscription } from '@/hooks/useSubscription';
-import { RefreshCw, Settings, TrendingUp, MessageSquare, Calendar, Plus, Database, Crown, Lock, Zap } from 'lucide-react';
+import { RefreshCw, Settings, TrendingUp, MessageSquare, Calendar, Plus, Database, Crown, Lock, Zap, User } from 'lucide-react';
 
 export const Dashboard = () => {
   const [persona, setPersona] = useState('saas-founder');
@@ -167,7 +168,7 @@ export const Dashboard = () => {
                         currentPlan.id === 'pro' ? 'bg-blue-100' : 'bg-yellow-100'
                       }`}>
                         {currentPlan.id === 'enterprise' ? (
-                          <Users className="w-6 h-6 text-purple-600" />
+                          <User className="w-6 h-6 text-purple-600" />
                         ) : currentPlan.id === 'pro' ? (
                           <Zap className="w-6 h-6 text-blue-600" />
                         ) : (
@@ -347,6 +348,9 @@ export const Dashboard = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Token Display */}
+            <TokenDisplay />
+            
             {/* Subscription Card */}
             <SubscriptionCard />
 

@@ -16,14 +16,14 @@ export function SupabaseTest() {
           console.log('Supabase connected successfully')
           setStatus('connected')
           setProjectInfo({ 
-            url: supabase.supabaseUrl,
+            url: 'https://fatssalzlbpjilxpfuhw.supabase.co',
             connected: true,
             message: 'Ready to store data!'
           })
         } else {
           setStatus('connected')
           setProjectInfo({ 
-            url: supabase.supabaseUrl,
+            url: 'https://fatssalzlbpjilxpfuhw.supabase.co',
             connected: true,
             message: 'Ready to store data!'
           })
