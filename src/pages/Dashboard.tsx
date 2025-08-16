@@ -156,6 +156,56 @@ export const Dashboard = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Plan Status Banner */}
+            {currentPlan && (
+              <Card className={`mb-6 ${currentPlan.isPopular ? 'ring-2 ring-primary' : currentPlan.id === 'free' ? 'ring-2 ring-yellow-400' : ''}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-full ${
+                        currentPlan.id === 'enterprise' ? 'bg-purple-100' :
+                        currentPlan.id === 'pro' ? 'bg-blue-100' : 'bg-yellow-100'
+                      }`}>
+                        {currentPlan.id === 'enterprise' ? (
+                          <Users className="w-6 h-6 text-purple-600" />
+                        ) : currentPlan.id === 'pro' ? (
+                          <Zap className="w-6 h-6 text-blue-600" />
+                        ) : (
+                          <Crown className="w-6 h-6 text-yellow-600" />
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg">
+                          {currentPlan.name} Plan
+                          {currentPlan.isPopular && (
+                            <Badge className="ml-2 bg-primary text-primary-foreground">Most Popular</Badge>
+                          )}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {getRemainingTokens()} of {currentPlan.tokensPerMonth} comments remaining this month
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold">
+                        {currentPlan.id === 'enterprise' ? 'Custom' : currentPlan.price === 0 ? 'Free' : `$${currentPlan.price}/mo`}
+                      </p>
+                      {currentPlan.id === 'free' && (
+                        <Button
+                          onClick={() => setPricingModalOpen(true)}
+                          size="sm"
+                          className="mt-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                        >
+                          <Crown className="w-4 h-4 mr-1" />
+                          Upgrade
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Stats Cards */}
             <div className="grid sm:grid-cols-3 gap-4">
               <Card>
