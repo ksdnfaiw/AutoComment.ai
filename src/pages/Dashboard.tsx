@@ -207,6 +207,9 @@ export const Dashboard = () => {
               </Card>
             </div>
 
+            {/* Analytics Card */}
+            <AnalyticsCard onUpgrade={() => setPricingModalOpen(true)} />
+
             {/* Comment History */}
             <Card>
               <CardHeader>
