@@ -43,7 +43,7 @@ serve(async (req) => {
     // Check user tokens and rate limits
     const { data: profile, error: profileError } = await supabaseClient
       .from('user_profiles')
-      .select('tokens_limit, tokens_used')
+      .select('tokens_limit, tokens_used, subscription_tier')
       .eq('id', user.id)
       .single()
 
