@@ -43,8 +43,8 @@ serve(async (req) => {
     // Check user tokens and rate limits
     const { data: profile, error: profileError } = await supabaseClient
       .from('user_profiles')
-      .select('tokens_remaining, hourly_request_limit, daily_request_limit')
-      .eq('user_id', user.id)
+      .select('tokens_limit, tokens_used')
+      .eq('id', user.id)
       .single()
 
     if (profileError || !profile || profile.tokens_remaining <= 0) {
