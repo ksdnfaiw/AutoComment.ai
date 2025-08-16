@@ -154,6 +154,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
       } else if (data.session) {
         // User was automatically signed in (email confirmation disabled)
+        // Ensure user profile is created with proper token allocation
+        await ensureUserProfile(data.user)
+
         toast({
           title: "Welcome! 🎉",
           description: "Account created successfully! Redirecting to your dashboard...",
