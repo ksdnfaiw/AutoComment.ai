@@ -65,6 +65,7 @@ export const Home = () => {
             </div>
 
             <div className="flex flex-wrap justify-center gap-4 mb-8">
+
               {user ? (
                 <>
                   <Button
@@ -108,6 +109,26 @@ export const Home = () => {
                   </Button>
                 </>
               )}
+
+              <Button 
+                asChild
+                size="lg"
+                className="bg-primary hover:bg-primary-hover text-primary-foreground font-medium text-lg px-8 py-3"
+              >
+                <a href="/auth">
+                  <Play className="w-5 h-5 mr-2" />
+                  Start Free Now
+                </a>
+              </Button>
+              <Button 
+                asChild
+                variant="outline"
+                size="lg"
+                className="text-lg px-8 py-3"
+              >
+                <a href="/demo">Watch Demo</a>
+              </Button>
+
             </div>
 
             {/* Social Proof */}
@@ -181,6 +202,7 @@ export const Home = () => {
                 <p className="text-muted-foreground mb-4">
                   Join hundreds of professionals already using AutoComment.AI
                 </p>
+
                 {user ? (
                   <Button
                     asChild
@@ -204,6 +226,18 @@ export const Home = () => {
                     </Link>
                   </Button>
                 )}
+
+                <Button 
+                  asChild
+                  className="w-full"
+                  size="lg"
+                >
+                  <a href="/auth">
+                    Get Started Free
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </a>
+                </Button>
+
               </div>
             </div>
           </div>

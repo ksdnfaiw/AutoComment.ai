@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -117,6 +117,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      feedback: {
+        Row: {
+          comment_text: string
+          created_at: string
+          id: string
+          persona_used: string | null
+          post_content: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          comment_text: string
+          created_at?: string
+          id?: string
+          persona_used?: string | null
+          post_content: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          comment_text?: string
+          created_at?: string
+          id?: string
+          persona_used?: string | null
+          post_content?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       linkedin_posts: {
         Row: {
@@ -243,6 +273,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          industry_domain: string | null
+          sample_feedback: Json
+          tone_style: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          industry_domain?: string | null
+          sample_feedback?: Json
+          tone_style?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          industry_domain?: string | null
+          sample_feedback?: Json
+          tone_style?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_profiles: {
         Row: {

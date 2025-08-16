@@ -1,9 +1,66 @@
 import { LinkedInButton } from '@/components/LinkedInButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { User, Heart, MessageSquare, Send, MoreHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { User, Heart, MessageSquare, Send, MoreHorizontal, RefreshCw } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+const SAMPLE_POSTS = {
+  'SaaS Founder': [
+    '🚀 AI is transforming SaaS in 2025! Just implemented automated customer onboarding that reduced churn by 40%. The key is personalization at scale. What AI features are you building into your products?',
+    '💡 Scaling startups with AI tools has been a game-changer. Our team productivity increased 60% after integrating AI workflows. The future of work is here! What\'s your experience with AI adoption?',
+    '🎯 Founder tip: AI adoption isn\'t about replacing humans, it\'s about amplifying their capabilities. We\'ve seen 3x faster product development cycles. How are you leveraging AI in your organization?',
+    '📈 SaaS growth hack: Use AI for predictive analytics to identify expansion opportunities. We increased upsells by 45% this quarter! Data-driven decisions are everything.',
+    '🤖 AI trends every founder should watch: Autonomous agents, personalized experiences, and predictive customer success. The landscape is evolving rapidly!'
+  ],
+  'Marketer': [
+    '🎯 Marketing strategies for 2025: AI-powered personalization is no longer optional. We\'re seeing 300% better engagement rates with dynamic content. What\'s working for your campaigns?',
+    '💡 Digital ads with AI optimization have transformed our ROI. Automated bidding and creative testing delivered 150% better performance. The data speaks for itself!',
+    '📝 Content marketing tips: Use AI to analyze audience sentiment and optimize messaging. Our blog traffic increased 200% with AI-driven content strategy.',
+    '🔍 SEO in the AI era requires understanding search intent better than ever. Voice search and AI assistants are changing how people discover content.',
+    '📱 Social media growth hacks: AI-powered posting schedules and content optimization have 2x our engagement. Timing and relevance are everything!'
+  ],
+  'Analyst': [
+    '📊 Data analysis trends show AI is becoming the standard for predictive modeling. Real-time insights are driving 40% faster decision-making across industries.',
+    '🤖 AI in analytics is revolutionizing how we interpret complex datasets. Machine learning models now identify patterns humans would miss in massive data volumes.',
+    '💼 Market insights with AI reveal consumer behavior trends 6 months ahead of traditional methods. The competitive advantage is substantial for early adopters.',
+    '🔧 Business intelligence tools powered by AI are democratizing data analysis. Non-technical teams can now generate sophisticated reports and insights independently.',
+    '🎯 Predictive analytics tips: Focus on data quality first, then model complexity. Clean data with simple models often outperforms complex algorithms on messy data.'
+  ],
+  'Investor': [
+    '💰 Investment opportunities in AI are unprecedented. Portfolio companies using AI show 3x faster growth rates. The infrastructure layer is particularly compelling.',
+    '🚀 VC trends for 2025: AI-first companies are commanding higher valuations. Due diligence now includes AI strategy assessment as a core competency.',
+    '💡 Startup funding tip: Show clear AI ROI metrics in your pitch. Investors want to see operational efficiency gains, not just technology demos.',
+    '👀 AI startups to watch: Companies solving real business problems with measurable outcomes. The hype cycle is over - execution matters most.',
+    '📈 Portfolio management with AI helps identify at-risk investments earlier. Predictive models flag potential issues 2-3 quarters in advance.'
+  ],
+  'Other': [
+    '🌟 Innovation in tech is accelerating faster than ever. The companies that adapt quickest will dominate the next decade. How is your organization preparing?',
+    '👨‍💼 Leadership tips for the digital age: Embrace continuous learning and foster a culture of experimentation. The best leaders are the most adaptable.',
+    '⚡ Productivity hacks that actually work: Time-blocking, automated workflows, and strategic delegation. Small improvements compound into massive gains.',
+    '🤝 Networking advice: Quality over quantity always wins. Build genuine relationships and focus on providing value first. The opportunities will follow.',
+    '🎯 Professional development insight: The skills gap is widening. Invest in learning new technologies and methodologies to stay relevant and valuable.'
+  ]
+};
 
 export const Demo = () => {
+  const navigate = useNavigate();
+  const [currentPost, setCurrentPost] = useState('');
+  const [currentPersona, setCurrentPersona] = useState('SaaS Founder');
+
+  const generateRandomPost = () => {
+    const savedPersona = localStorage.getItem('persona') || 'Other';
+    const posts = SAMPLE_POSTS[savedPersona as keyof typeof SAMPLE_POSTS] || SAMPLE_POSTS['Other'];
+    const randomPost = posts[Math.floor(Math.random() * posts.length)];
+    setCurrentPost(randomPost);
+    setCurrentPersona(savedPersona);
+  };
+
+  useEffect(() => {
+    generateRandomPost();
+  }, []);
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
@@ -14,6 +71,15 @@ export const Demo = () => {
           <p className="text-muted-foreground">
             See how AutoComment.AI works on LinkedIn posts
           </p>
+          <div className="mt-4 flex justify-center gap-4">
+            <Button onClick={generateRandomPost} variant="outline" className="flex items-center gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Generate New Post
+            </Button>
+            <Button onClick={() => navigate('/dashboard')} className="bg-blue-600 hover:bg-blue-700">
+              Go to Dashboard
+            </Button>
+          </div>
         </div>
 
         {/* Mock LinkedIn Post */}
@@ -29,7 +95,7 @@ export const Demo = () => {
                   <Badge variant="secondary" className="text-xs">1st</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mb-1">
-                  SaaS Founder | AI Enthusiast | Building the Future
+                  {currentPersona} | AI Enthusiast | Building the Future
                 </p>
                 <p className="text-xs text-muted-foreground">2h • 🌍</p>
               </div>
@@ -42,22 +108,13 @@ export const Demo = () => {
           <CardContent className="pt-0">
             <div className="mb-4">
               <p className="text-card-foreground leading-relaxed">
-                🚀 Just launched our new AI-powered feature that automates customer support responses! 
-                <br /><br />
-                The results are incredible:
-                <br />• 90% faster response times
-                <br />• 95% customer satisfaction 
-                <br />• 60% reduction in support tickets
-                <br /><br />
-                AI isn't replacing our team - it's making them superhuman! 💪
-                <br /><br />
-                What's your experience with AI in customer service? Drop your thoughts below! 👇
+                {currentPost}
               </p>
             </div>
 
             {/* AutoComment.AI Button Demo */}
             <div className="mb-4">
-              <LinkedInButton />
+              <LinkedInButton postContent={currentPost} />
             </div>
 
             {/* LinkedIn Engagement Bar */}

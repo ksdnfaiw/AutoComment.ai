@@ -1,1 +1,21 @@
 project_id = "fatssalzlbpjilxpfuhw"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54324
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://3303b9be-3060-4d9f-93c2-0d45c05ab2e2.lovableproject.com"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+security_update_password_require_reauthentication = false
+security_refresh_token_reuse_interval = 10
+
+[functions.generate-comments]
+verify_jwt = false
