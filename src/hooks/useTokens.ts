@@ -23,8 +23,8 @@ export const useTokens = () => {
 
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('tokens_remaining, tokens_total, subscription_plan')
-        .eq('user_id', user.id)
+        .select('tokens_limit, tokens_used, subscription_tier')
+        .eq('id', user.id)
         .single();
 
       if (error) {
@@ -32,10 +32,14 @@ export const useTokens = () => {
         throw error;
       }
 
+      const tokensLimit = data.tokens_limit || 50;
+      const tokensUsed = data.tokens_used || 0;
+      const tokensRemaining = Math.max(0, tokensLimit - tokensUsed);
+
       return {
-        current: data.tokens_remaining || 0,
-        total: data.tokens_total || 50,
-        plan: data.subscription_plan || 'free'
+        current: tokensRemaining,
+        total: tokensLimit,
+        plan: data.subscription_tier || 'free'
       };
     },
     enabled: !!user,
@@ -51,11 +55,11 @@ export const useTokens = () => {
 
       const { error } = await supabase
         .from('user_profiles')
-        .update({ 
-          tokens_remaining: newTokenCount,
-          tokens_total: newTokenCount
+        .update({
+          tokens_limit: newTokenCount,
+          tokens_used: 0
         })
-        .eq('user_id', user.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 
@@ -83,10 +87,11 @@ export const useTokens = () => {
     if (!user || !tokenData) return false;
 
     try {
+      const newTokensUsed = (tokenData.total - tokenData.current) + 1;
       const { error } = await supabase
         .from('user_profiles')
-        .update({ tokens_remaining: Math.max(0, tokenData.current - 1) })
-        .eq('user_id', user.id);
+        .update({ tokens_used: newTokensUsed })
+        .eq('id', user.id);
 
       if (error) throw error;
 
