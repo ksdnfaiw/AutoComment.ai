@@ -1,4 +1,3 @@
-import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,10 +8,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Demo from "./pages/Demo";
-
-import { Auth } from "./pages/Auth";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -38,7 +34,6 @@ const queryClient = new QueryClient({
 });
 
 const App = () => (
-
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -74,7 +69,6 @@ const App = () => (
       </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
-
 );
 
 export default App;
