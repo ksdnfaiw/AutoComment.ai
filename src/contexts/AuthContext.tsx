@@ -45,7 +45,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null)
         setLoading(false)
 
-        if (event === 'SIGNED_IN') {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Check if user profile exists, if not create one with proper token allocation
+          await ensureUserProfile(session.user)
+
           toast({
             title: "Welcome back!",
             description: `Signed in as ${session?.user?.email}`,
