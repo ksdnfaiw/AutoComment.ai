@@ -274,33 +274,6 @@ export type Database = {
           },
         ]
       }
-      user_preferences: {
-        Row: {
-          created_at: string
-          industry_domain: string | null
-          sample_feedback: Json
-          tone_style: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          industry_domain?: string | null
-          sample_feedback?: Json
-          tone_style?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          industry_domain?: string | null
-          sample_feedback?: Json
-          tone_style?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       user_profiles: {
         Row: {
           avatar_url: string | null

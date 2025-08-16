@@ -16,8 +16,8 @@ serve(async (req) => {
     // Get the authorization header
     const authHeader = req.headers.get('Authorization')!
     const supabaseClient = createClient(
-      Denv.get('SUPABASE_URL') ?? '',
-      Denv.get('SUPABASE_ANON_KEY') ?? '',
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader } } }
     )
 
@@ -43,50 +43,36 @@ serve(async (req) => {
     // Check user tokens and rate limits
     const { data: profile, error: profileError } = await supabaseClient
       .from('user_profiles')
-      .select('tokens_remaining, hourly_request_limit, daily_request_limit')
-      .eq('user_id', user.id)
+      .select('tokens_limit, tokens_used, subscription_tier')
+      .eq('id', user.id)
       .single()
 
-    if (profileError || !profile || profile.tokens_remaining <= 0) {
+    const tokensRemaining = profile ? Math.max(0, (profile.tokens_limit || 50) - (profile.tokens_used || 0)) : 0;
+
+    if (profileError || !profile || tokensRemaining <= 0) {
       return new Response(
         JSON.stringify({ error: 'Insufficient tokens' }),
         { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Check hourly rate limit
-    const { data: hourlyCheck, error: hourlyError } = await supabaseClient
-      .rpc('check_rate_limit', {
-        p_user_id: user.id,
-        p_action_type: 'comment_generation',
-        p_max_requests: profile.hourly_request_limit || 10,
-        p_window_minutes: 60
-      })
+    // Simple rate limiting check based on subscription tier
+    const subscriptionTier = profile.subscription_tier || 'free';
+    const hourlyLimit = subscriptionTier === 'free' ? 3 : subscriptionTier === 'pro' ? 50 : 9999;
 
-    if (hourlyError || !hourlyCheck) {
+    // Check if user has made too many requests in the last hour (simple check)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+    const { count: recentRequests } = await supabaseClient
+      .from('comments')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', oneHourAgo);
+
+    if ((recentRequests || 0) >= hourlyLimit) {
       return new Response(
         JSON.stringify({
           error: 'Rate limit exceeded',
-          details: 'Hourly request limit reached. Please try again later.'
-        }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Check daily rate limit
-    const { data: dailyCheck, error: dailyError } = await supabaseClient
-      .rpc('check_rate_limit', {
-        p_user_id: user.id,
-        p_action_type: 'daily_comment_generation',
-        p_max_requests: profile.daily_request_limit || 50,
-        p_window_minutes: 1440 // 24 hours
-      })
-
-    if (dailyError || !dailyCheck) {
-      return new Response(
-        JSON.stringify({
-          error: 'Rate limit exceeded',
-          details: 'Daily request limit reached. Please upgrade your plan or try again tomorrow.'
+          details: `Hourly limit of ${hourlyLimit} requests reached. Please try again later.`
         }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
@@ -98,21 +84,24 @@ serve(async (req) => {
     // Deduct token
     await supabaseClient
       .from('user_profiles')
-      .update({ tokens_remaining: profile.tokens_remaining - 1 })
-      .eq('user_id', user.id)
+      .update({ tokens_used: (profile.tokens_used || 0) + 1 })
+      .eq('id', user.id)
 
-    // Save comment history
+    // Save comments to database
+    const commentInserts = comments.map(comment => ({
+      user_id: user.id,
+      post_content: postContent.substring(0, 500),
+      generated_comment: comment.text,
+      persona_used: persona || 'Professional',
+      ai_confidence_score: comment.confidence
+    }));
+
     await supabaseClient
-      .from('comment_history')
-      .insert({
-        user_id: user.id,
-        post_content: postContent.substring(0, 500),
-        generated_comments: comments,
-        persona_used: persona || 'Professional'
-      })
+      .from('comments')
+      .insert(commentInserts);
 
     return new Response(
-      JSON.stringify({ comments, tokensRemaining: profile.tokens_remaining - 1 }),
+      JSON.stringify({ comments, tokensRemaining: tokensRemaining - 1 }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
