@@ -3,29 +3,47 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { TokenDisplay } from '@/components/TokenDisplay';
+import { SubscriptionCard } from '@/components/SubscriptionCard';
+import { PricingModal } from '@/components/PricingModal';
 import { PersonaSelect } from '@/components/PersonaSelect';
 import { useToast } from '@/hooks/use-toast';
 import { useCommentHistory, useUserStats } from '@/hooks/useSupabaseData';
-import { RefreshCw, Settings, TrendingUp, MessageSquare, Calendar, Plus, Database } from 'lucide-react';
+import { useSubscription } from '@/hooks/useSubscription';
+import { RefreshCw, Settings, TrendingUp, MessageSquare, Calendar, Plus, Database, Crown, Lock, Zap } from 'lucide-react';
 
 export const Dashboard = () => {
-  const [tokens, setTokens] = useState({ current: 47, total: 50 });
   const [persona, setPersona] = useState('saas-founder');
   const [loading, setLoading] = useState(false);
   const [testPost, setTestPost] = useState('AI is transforming how we build SaaS products...');
   const [testComment, setTestComment] = useState('Absolutely! AI automation saves us hours daily in our development process.');
+  const [pricingModalOpen, setPricingModalOpen] = useState(false);
 
   const { toast } = useToast();
   const { commentHistory, loading: commentsLoading, error: commentsError, refetch, addComment } = useCommentHistory();
   const { stats, loading: statsLoading } = useUserStats();
+  const {
+    currentPlan,
+    hasFeatureAccess,
+    hasRemainingTokens,
+    getRemainingTokens,
+    getUsagePercentage,
+    subscriptionLoading
+  } = useSubscription();
 
   const refreshTokens = async () => {
+    if (!hasFeatureAccess('manual_refresh')) {
+      toast({
+        title: "Feature not available",
+        description: "Manual token refresh is only available in Pro and Enterprise plans.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
-    
+
     // Mock API call to n8n webhook
     setTimeout(() => {
-      setTokens({ current: 50, total: 50 });
       toast({
         title: "Tokens refreshed!",
         description: "Your monthly token balance has been reset.",
@@ -35,6 +53,16 @@ export const Dashboard = () => {
   };
 
   const updatePersona = async () => {
+    if (!hasFeatureAccess('advanced_personas') && persona !== 'professional') {
+      toast({
+        title: "Premium feature",
+        description: "Advanced personas are only available in Pro and Enterprise plans.",
+        variant: "destructive",
+      });
+      setPricingModalOpen(true);
+      return;
+    }
+
     toast({
       title: "Persona updated!",
       description: "Your comment style will be adjusted to match your new persona.",
@@ -45,6 +73,16 @@ export const Dashboard = () => {
   };
 
   const addTestComment = async () => {
+    if (!hasRemainingTokens()) {
+      toast({
+        title: "No tokens remaining",
+        description: "You've used all your tokens for this month. Upgrade your plan for more tokens.",
+        variant: "destructive",
+      });
+      setPricingModalOpen(true);
+      return;
+    }
+
     setLoading(true);
     const result = await addComment(testPost, testComment);
 
@@ -85,15 +123,30 @@ export const Dashboard = () => {
               </div>
             </div>
             
-            <Button
-              onClick={refreshTokens}
-              disabled={loading}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh Tokens
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={refreshTokens}
+                disabled={loading || !hasFeatureAccess('manual_refresh')}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh Tokens
+                {!hasFeatureAccess('manual_refresh') && (
+                  <Lock className="w-3 h-3 ml-1 text-muted-foreground" />
+                )}
+              </Button>
+
+              {currentPlan?.id === 'free' && (
+                <Button
+                  onClick={() => setPricingModalOpen(true)}
+                  className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <Crown className="w-4 h-4" />
+                  Upgrade
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -240,8 +293,8 @@ export const Dashboard = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Token Display */}
-            <TokenDisplay />
+            {/* Subscription Card */}
+            <SubscriptionCard />
 
             {/* Persona Settings */}
             <Card>
@@ -249,6 +302,12 @@ export const Dashboard = () => {
                 <CardTitle className="flex items-center gap-2">
                   <Settings className="w-5 h-5" />
                   Persona Settings
+                  {!hasFeatureAccess('advanced_personas') && (
+                    <Badge variant="outline" className="text-xs">
+                      <Lock className="w-3 h-3 mr-1" />
+                      Premium
+                    </Badge>
+                  )}
                 </CardTitle>
                 <CardDescription>
                   Customize your comment style and tone
@@ -259,49 +318,123 @@ export const Dashboard = () => {
                   <label className="text-sm font-medium text-card-foreground">
                     Current Persona
                   </label>
-                  <PersonaSelect value={persona} onValueChange={setPersona} />
+                  <PersonaSelect
+                    value={persona}
+                    onValueChange={setPersona}
+                    disabled={!hasFeatureAccess('advanced_personas')}
+                  />
+                  {!hasFeatureAccess('advanced_personas') && (
+                    <p className="text-xs text-muted-foreground">
+                      Advanced personas available in Pro plans
+                    </p>
+                  )}
                 </div>
-                
+
                 <Button
                   onClick={updatePersona}
                   className="w-full bg-primary hover:bg-primary-hover text-primary-foreground"
+                  disabled={!hasFeatureAccess('advanced_personas') && persona !== 'professional'}
                 >
                   Update Persona
+                  {!hasFeatureAccess('advanced_personas') && (
+                    <Lock className="w-3 h-3 ml-2" />
+                  )}
                 </Button>
               </CardContent>
             </Card>
 
-            {/* Usage Tips */}
+            {/* Plan Features & Tips */}
             <Card>
               <CardHeader>
-                <CardTitle>💡 Pro Tips</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  {currentPlan?.id === 'free' ? (
+                    <>
+                      <Zap className="w-5 h-5 text-yellow-500" />
+                      Upgrade Benefits
+                    </>
+                  ) : (
+                    <>
+                      💡 Pro Tips
+                    </>
+                  )}
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <div className="p-3 bg-accent rounded-lg">
-                  <p className="font-medium text-accent-foreground mb-1">Be Authentic</p>
-                  <p className="text-muted-foreground">
-                    Review and edit suggestions to match your personal voice
-                  </p>
-                </div>
-                
-                <div className="p-3 bg-accent rounded-lg">
-                  <p className="font-medium text-accent-foreground mb-1">Engage Meaningfully</p>
-                  <p className="text-muted-foreground">
-                    Focus on posts where you can add genuine value
-                  </p>
-                </div>
-                
-                <div className="p-3 bg-accent rounded-lg">
-                  <p className="font-medium text-accent-foreground mb-1">Track Performance</p>
-                  <p className="text-muted-foreground">
-                    Use rejection feedback to improve future suggestions
-                  </p>
-                </div>
+                {currentPlan?.id === 'free' ? (
+                  <>
+                    <div className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                      <p className="font-medium text-blue-900 mb-1 flex items-center gap-2">
+                        <Crown className="w-4 h-4" />
+                        10x More Tokens
+                      </p>
+                      <p className="text-blue-700 text-xs">
+                        Get 500 comments per month instead of 50
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                      <p className="font-medium text-green-900 mb-1 flex items-center gap-2">
+                        <Settings className="w-4 h-4" />
+                        Advanced Personas
+                      </p>
+                      <p className="text-green-700 text-xs">
+                        Access to professional, creative, and custom personas
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                      <p className="font-medium text-purple-900 mb-1 flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4" />
+                        Priority Support
+                      </p>
+                      <p className="text-purple-700 text-xs">
+                        Get faster responses and dedicated support
+                      </p>
+                    </div>
+
+                    <Button
+                      onClick={() => setPricingModalOpen(true)}
+                      className="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      <Crown className="w-4 h-4 mr-2" />
+                      Upgrade Now - Starting $19/mo
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-3 bg-accent rounded-lg">
+                      <p className="font-medium text-accent-foreground mb-1">Be Authentic</p>
+                      <p className="text-muted-foreground">
+                        Review and edit suggestions to match your personal voice
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-accent rounded-lg">
+                      <p className="font-medium text-accent-foreground mb-1">Engage Meaningfully</p>
+                      <p className="text-muted-foreground">
+                        Focus on posts where you can add genuine value
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-accent rounded-lg">
+                      <p className="font-medium text-accent-foreground mb-1">Track Performance</p>
+                      <p className="text-muted-foreground">
+                        Use rejection feedback to improve future suggestions
+                      </p>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* Pricing Modal */}
+      <PricingModal
+        open={pricingModalOpen}
+        onOpenChange={setPricingModalOpen}
+      />
     </div>
   );
 };
