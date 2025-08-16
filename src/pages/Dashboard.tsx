@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { SubscriptionCard } from '@/components/SubscriptionCard';
 import { PricingModal } from '@/components/PricingModal';
+import { AnalyticsCard } from '@/components/AnalyticsCard';
 import { PersonaSelect } from '@/components/PersonaSelect';
 import { useToast } from '@/hooks/use-toast';
 import { useCommentHistory, useUserStats } from '@/hooks/useSupabaseData';
