@@ -1,11 +1,22 @@
 // AutoComment.AI Chrome Extension Background Script
 
+// Auto-detect web app URL
+async function getWebAppURL() {
+  try {
+    const result = await chrome.storage.local.get(['webapp_url']);
+    return result.webapp_url || 'https://727d62769b6941fc99720b10fafde5d4-8f10095ae10a4256928cde286.fly.dev';
+  } catch {
+    return 'https://727d62769b6941fc99720b10fafde5d4-8f10095ae10a4256928cde286.fly.dev';
+  }
+}
+
 // Install/Update handler
-chrome.runtime.onInstalled.addListener((details) => {
+chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
     // Open welcome page on first install
+    const webAppURL = await getWebAppURL();
     chrome.tabs.create({
-      url: 'https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/auth?source=extension'
+      url: `${webAppURL}/auth?source=extension`
     });
   } else if (details.reason === 'update') {
     // Handle extension updates
@@ -35,14 +46,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       return true; // Will respond asynchronously
       
     case 'open_dashboard':
-      chrome.tabs.create({ url: 'https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/dashboard' });
-      sendResponse({ success: true });
-      break;
-      
+      getWebAppURL().then(webAppURL => {
+        chrome.tabs.create({ url: `${webAppURL}/dashboard` });
+        sendResponse({ success: true });
+      });
+      return true;
+
     case 'open_auth':
-      chrome.tabs.create({ url: 'https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/auth?source=extension' });
-      sendResponse({ success: true });
-      break;
+      getWebAppURL().then(webAppURL => {
+        chrome.tabs.create({ url: `${webAppURL}/auth?source=extension` });
+        sendResponse({ success: true });
+      });
+      return true;
       
     case 'store_auth':
       // Store authentication data

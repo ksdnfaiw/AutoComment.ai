@@ -4,8 +4,18 @@
 (function() {
   'use strict';
 
-  // Configuration
+  // Configuration - Dynamic API detection
   const API_BASE_URL = 'https://fatssalzlbpjilxpfuhw.supabase.co';
+
+  // Auto-detect web app URL from storage or default
+  async function getWebAppURL() {
+    try {
+      const result = await chrome.storage.local.get(['webapp_url']);
+      return result.webapp_url || 'https://727d62769b6941fc99720b10fafde5d4-8f10095ae10a4256928cde286.fly.dev';
+    } catch {
+      return 'https://727d62769b6941fc99720b10fafde5d4-8f10095ae10a4256928cde286.fly.dev';
+    }
+  }
   
   const BUTTON_HTML = `
     <button 
@@ -88,8 +98,9 @@
       
       <div class="autocomment-login" style="display: none; text-align: center; padding: 20px;">
         <p style="margin: 0 0 12px; color: #6b7280; font-size: 14px;">Please log in to use AutoComment.AI</p>
-        <a href="https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/auth" 
-           target="_blank" 
+        <a href="#"
+           id="login-link"
+           target="_blank"
            style="
              background: #3b82f6;
              color: white;
@@ -473,6 +484,13 @@
           
           if (error.message === 'NOT_AUTHENTICATED') {
             loginDiv.style.display = 'block';
+            // Set dynamic login URL
+            getWebAppURL().then(webAppURL => {
+              const loginLink = loginDiv.querySelector('#login-link');
+              if (loginLink) {
+                loginLink.href = `${webAppURL}/auth`;
+              }
+            });
           } else {
             popup.innerHTML = `
               <div style="text-align: center; padding: 20px; color: #ef4444;">

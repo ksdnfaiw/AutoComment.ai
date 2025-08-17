@@ -1,5 +1,15 @@
 // AutoComment.AI Chrome Extension Popup Script
 
+// Auto-detect web app URL
+async function getWebAppURL() {
+  try {
+    const result = await chrome.storage.local.get(['webapp_url']);
+    return result.webapp_url || 'https://727d62769b6941fc99720b10fafde5d4-8f10095ae10a4256928cde286.fly.dev';
+  } catch {
+    return 'https://727d62769b6941fc99720b10fafde5d4-8f10095ae10a4256928cde286.fly.dev';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const loadingEl = document.getElementById('loading');
   const contentEl = document.getElementById('content');
@@ -103,11 +113,12 @@ async function loadUserStatus() {
     tokenCount.textContent = 'Unable to load';
   }
   
-  // Set up dashboard link
-  dashboardBtn.href = 'https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/dashboard';
+  // Set up dashboard link with dynamic URL
+  const webAppURL = await getWebAppURL();
+  dashboardBtn.href = `${webAppURL}/dashboard`;
   dashboardBtn.addEventListener('click', (e) => {
     e.preventDefault();
-    chrome.tabs.create({ url: 'https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev/dashboard' });
+    chrome.tabs.create({ url: `${webAppURL}/dashboard` });
     window.close();
   });
   
