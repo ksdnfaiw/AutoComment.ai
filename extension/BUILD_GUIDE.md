@@ -7,14 +7,7 @@
 
 ## 🛠️ Build Steps
 
-### Step 1: Prepare Extension Files
-1. **Update URLs in Extension Files** (IMPORTANT):
-   - Replace `https://727d62769b6941fc99720b10fafde5d4-e068012f2a214dc59a9953e3a.fly.dev` with your actual deployed web app URL in:
-     - `extension/content.js` (line 91, 107, 110)
-     - `extension/popup.js` (line 107, 110)
-     - `extension/background.js` (lines 8, 38, 43)
-
-### Step 2: Convert SVG Icons to PNG (Required)
+### Step 1: Convert SVG Icons to PNG (Required)
 Chrome extensions require PNG icons, not SVG. Convert the icons:
 
 ```bash
@@ -32,7 +25,7 @@ Chrome extensions require PNG icons, not SVG. Convert the icons:
 3. Convert to PNG with the same dimensions
 4. Download and replace the SVG files
 
-### Step 3: Load Extension in Chrome
+### Step 2: Load Extension in Chrome
 
 1. **Open Chrome Extensions Page**:
    - Go to `chrome://extensions/`
@@ -51,6 +44,9 @@ Chrome extensions require PNG icons, not SVG. Convert the icons:
    - Pin "AutoComment.AI" for easy access
 
 ## 🔗 Connecting Extension to Web App
+
+### Automatic Domain Detection
+The extension now automatically detects your web app URL! No manual configuration needed.
 
 ### Step 1: User Authentication Flow
 1. **Install Extension** → Opens welcome page automatically
@@ -86,28 +82,17 @@ extension/
 └── BUILD_GUIDE.md    # This guide
 ```
 
-## 🔧 Configuration
+## 🔧 Optional: Custom Domain Configuration
 
-### Update Web App URLs
-Before loading the extension, update these URLs in the code:
+If you want to override the automatic domain detection:
 
-**content.js** (line 8):
-```javascript
-const API_BASE_URL = 'https://YOUR-ACTUAL-DOMAIN.com';
-```
+1. **Open Chrome DevTools** on any page
+2. **Go to Application** → Storage → Extension Storage
+3. **Add key-value pair**:
+   - Key: `webapp_url`
+   - Value: `https://your-custom-domain.com`
 
-**popup.js** (line 57, 107, 110):
-```javascript
-// Update all instances of the old URL
-'https://YOUR-ACTUAL-DOMAIN.com'
-```
-
-**background.js** (lines 8, 38, 43):
-```javascript
-// Update welcome and dashboard URLs
-'https://YOUR-ACTUAL-DOMAIN.com/auth?source=extension'
-'https://YOUR-ACTUAL-DOMAIN.com/dashboard'
-```
+The extension will now use your custom domain instead of auto-detection.
 
 ## 🚀 Publishing to Chrome Web Store (Optional)
 
@@ -132,9 +117,9 @@ zip -r autocomment-extension.zip extension/
 
 ### Extension Not Working
 1. Check console errors in `chrome://extensions/`
-2. Verify all URLs are updated correctly
-3. Ensure you're logged into the web app
-4. Refresh LinkedIn page
+2. Ensure you're logged into the web app
+3. Refresh LinkedIn page
+4. Try clearing extension storage
 
 ### Icons Not Showing
 1. Ensure icons are PNG format, not SVG
@@ -146,7 +131,19 @@ zip -r autocomment-extension.zip extension/
 2. Re-login to web app
 3. Check popup for connection status
 
+### Domain Issues
+1. Extension auto-detects domain - no manual setup needed
+2. If issues persist, set custom domain in extension storage
+3. Ensure web app is accessible at the detected URL
+
 ## 📞 Support
 - Check browser console for errors
 - Verify web app is accessible
 - Ensure LinkedIn permissions are granted
+- Extension now works with any domain automatically!
+
+## ✨ New Features
+- **Domain-Free Setup**: No need to update URLs manually
+- **Automatic Detection**: Extension finds your web app automatically
+- **Fallback Support**: Uses current dev URL as fallback
+- **Easy Deployment**: Works immediately after Chrome store publication
