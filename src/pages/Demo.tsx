@@ -1,8 +1,21 @@
 import { CommentGenerator } from '@/components/CommentGenerator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { User, Heart, MessageSquare, Send, MoreHorizontal, RefreshCw, Chrome, Download } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { 
+  User, 
+  Heart, 
+  MessageSquare, 
+  Send, 
+  MoreHorizontal, 
+  RefreshCw, 
+  Chrome, 
+  Download,
+  Repeat2,
+  ThumbsUp,
+  Award
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,23 +34,9 @@ const SAMPLE_POSTS = {
     '🔍 SEO in the AI era requires understanding search intent better than ever. Voice search and AI assistants are changing how people discover content.',
     '📱 Social media growth hacks: AI-powered posting schedules and content optimization have 2x our engagement. Timing and relevance are everything!'
   ],
-  'Analyst': [
-    '📊 Data analysis trends show AI is becoming the standard for predictive modeling. Real-time insights are driving 40% faster decision-making across industries.',
-    '🤖 AI in analytics is revolutionizing how we interpret complex datasets. Machine learning models now identify patterns humans would miss in massive data volumes.',
-    '💼 Market insights with AI reveal consumer behavior trends 6 months ahead of traditional methods. The competitive advantage is substantial for early adopters.',
-    '🔧 Business intelligence tools powered by AI are democratizing data analysis. Non-technical teams can now generate sophisticated reports and insights independently.',
-    '🎯 Predictive analytics tips: Focus on data quality first, then model complexity. Clean data with simple models often outperforms complex algorithms on messy data.'
-  ],
-  'Investor': [
-    '💰 Investment opportunities in AI are unprecedented. Portfolio companies using AI show 3x faster growth rates. The infrastructure layer is particularly compelling.',
-    '🚀 VC trends for 2025: AI-first companies are commanding higher valuations. Due diligence now includes AI strategy assessment as a core competency.',
-    '💡 Startup funding tip: Show clear AI ROI metrics in your pitch. Investors want to see operational efficiency gains, not just technology demos.',
-    '👀 AI startups to watch: Companies solving real business problems with measurable outcomes. The hype cycle is over - execution matters most.',
-    '📈 Portfolio management with AI helps identify at-risk investments earlier. Predictive models flag potential issues 2-3 quarters in advance.'
-  ],
   'Other': [
-    '🌟 Innovation in tech is accelerating faster than ever. The companies that adapt quickest will dominate the next decade. How is your organization preparing?',
-    '👨‍💼 Leadership tips for the digital age: Embrace continuous learning and foster a culture of experimentation. The best leaders are the most adaptable.',
+    '🚀 Leadership tips for the digital age: Embrace continuous learning and foster a culture of experimentation. The best leaders are the most adaptable.',
+    '💡 Innovation in tech is accelerating faster than ever. The companies that adapt quickest will dominate the next decade. How is your organization preparing?',
     '⚡ Productivity hacks that actually work: Time-blocking, automated workflows, and strategic delegation. Small improvements compound into massive gains.',
     '🤝 Networking advice: Quality over quantity always wins. Build genuine relationships and focus on providing value first. The opportunities will follow.',
     '🎯 Professional development insight: The skills gap is widening. Invest in learning new technologies and methodologies to stay relevant and valuable.'
@@ -46,137 +45,218 @@ const SAMPLE_POSTS = {
 
 export const Demo = () => {
   const navigate = useNavigate();
-  const [currentPost, setCurrentPost] = useState('');
-  const [currentPersona, setCurrentPersona] = useState('SaaS Founder');
+  const [currentPost, setCurrentPost] = useState('🚀 Leadership tips for the digital age: Embrace continuous learning and foster a culture of experimentation. The best leaders are the most adaptable.');
+  const [currentPersona, setCurrentPersona] = useState('Other');
 
   const generateRandomPost = () => {
-    const savedPersona = localStorage.getItem('persona') || 'Other';
-    const posts = SAMPLE_POSTS[savedPersona as keyof typeof SAMPLE_POSTS] || SAMPLE_POSTS['Other'];
+    const personas = Object.keys(SAMPLE_POSTS);
+    const randomPersona = personas[Math.floor(Math.random() * personas.length)];
+    const posts = SAMPLE_POSTS[randomPersona as keyof typeof SAMPLE_POSTS];
     const randomPost = posts[Math.floor(Math.random() * posts.length)];
     setCurrentPost(randomPost);
-    setCurrentPersona(savedPersona);
+    setCurrentPersona(randomPersona);
   };
 
   useEffect(() => {
-    generateRandomPost();
+    const savedPersona = localStorage.getItem('persona') || 'Other';
+    setCurrentPersona(savedPersona);
   }, []);
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Chrome Extension Demo
-          </h1>
-          <p className="text-muted-foreground">
-            See how AutoComment.AI works on LinkedIn posts
-          </p>
-          <div className="mt-4 flex justify-center gap-4">
-            <Button onClick={generateRandomPost} variant="outline" className="flex items-center gap-2">
-              <RefreshCw className="w-4 h-4" />
-              Generate New Post
-            </Button>
-            <Button onClick={() => navigate('/dashboard')} className="bg-blue-600 hover:bg-blue-700">
-              Go to Dashboard
-            </Button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              AutoComment.AI Demo
+            </h1>
+            <p className="text-gray-600 mb-4">
+              Experience how our Chrome extension generates intelligent LinkedIn comments in real-time
+            </p>
+            <div className="flex justify-center gap-4">
+              <Button 
+                onClick={generateRandomPost} 
+                variant="outline" 
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Try Different Post
+              </Button>
+              <Button 
+                onClick={() => navigate('/auth')} 
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Get Started Free
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Mock LinkedIn Post */}
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader className="pb-3">
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        {/* LinkedIn-style Post Card */}
+        <Card className="bg-white shadow-sm border border-gray-200 rounded-lg overflow-hidden">
+          {/* Post Header */}
+          <div className="p-4">
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <User className="w-6 h-6 text-primary" />
-              </div>
+              <Avatar className="w-12 h-12">
+                <AvatarImage src="" alt="Sarah Chen" />
+                <AvatarFallback className="bg-blue-100 text-blue-600 font-semibold">
+                  SC
+                </AvatarFallback>
+              </Avatar>
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-card-foreground">Sarah Chen</h3>
-                  <Badge variant="secondary" className="text-xs">1st</Badge>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-gray-900">Sarah Chen</h3>
+                  <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+                    1st
+                  </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mb-1">
+                <p className="text-sm text-gray-600">
                   {currentPersona} | AI Enthusiast | Building the Future
                 </p>
-                <p className="text-xs text-muted-foreground">2h • 🌍</p>
+                <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
+                  <span>2h</span>
+                  <span>•</span>
+                  <span>🌍</span>
+                </div>
               </div>
-              <button className="p-1 hover:bg-accent rounded">
-                <MoreHorizontal className="w-5 h-5 text-muted-foreground" />
+              <Button variant="ghost" size="sm" className="text-gray-500 hover:bg-gray-100">
+                <MoreHorizontal className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Post Content */}
+          <div className="px-4 pb-3">
+            <p className="text-gray-900 leading-relaxed text-sm">
+              {currentPost}
+            </p>
+          </div>
+
+          {/* Extension CTA - Exactly like in your image */}
+          <div className="mx-4 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <Chrome className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h4 className="font-semibold text-blue-900 text-sm">
+                  Get Instant AI Comments on LinkedIn
+                </h4>
+                <p className="text-xs text-blue-700">
+                  Download our Chrome extension for real-time comment suggestions
+                </p>
+              </div>
+              <Button 
+                size="sm" 
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-xs font-medium"
+                onClick={() => window.open('/auth', '_self')}
+              >
+                <Download className="w-3 h-3 mr-1" />
+                Install
+              </Button>
+            </div>
+          </div>
+
+          {/* Engagement Stats */}
+          <div className="px-4 pb-3">
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-1">
+                  <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center border border-white">
+                    <ThumbsUp className="w-2 h-2 text-white" />
+                  </div>
+                  <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center border border-white">
+                    <Heart className="w-2 h-2 text-white" />
+                  </div>
+                  <div className="w-4 h-4 bg-yellow-500 rounded-full flex items-center justify-center border border-white">
+                    <Award className="w-2 h-2 text-white" />
+                  </div>
+                </div>
+                <span>142</span>
+              </div>
+              <div className="flex gap-4">
+                <span>23 comments</span>
+                <span>8 reposts</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="border-t border-gray-200">
+            <div className="flex">
+              <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors">
+                <ThumbsUp className="w-4 h-4" />
+                <span className="text-sm font-medium">Like</span>
+              </button>
+              <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors">
+                <MessageSquare className="w-4 h-4" />
+                <span className="text-sm font-medium">Comment</span>
+              </button>
+              <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors">
+                <Repeat2 className="w-4 h-4" />
+                <span className="text-sm font-medium">Repost</span>
+              </button>
+              <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors">
+                <Send className="w-4 h-4" />
+                <span className="text-sm font-medium">Send</span>
               </button>
             </div>
-          </CardHeader>
-          
-          <CardContent className="pt-0">
-            <div className="mb-4">
-              <p className="text-card-foreground leading-relaxed">
-                {currentPost}
-              </p>
-            </div>
-
-            {/* Chrome Extension CTA */}
-            <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-3">
-                <Chrome className="w-8 h-8 text-blue-600" />
-                <div className="flex-1">
-                  <h4 className="font-semibold text-blue-900">Get Instant AI Comments on LinkedIn</h4>
-                  <p className="text-sm text-blue-700">Download our Chrome extension for real-time comment suggestions</p>
-                </div>
-                <Button 
-                  size="sm" 
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => window.open('https://chrome.google.com/webstore', '_blank')}
-                >
-                  <Download className="w-4 h-4 mr-1" />
-                  Install
-                </Button>
-              </div>
-            </div>
-
-            {/* LinkedIn Engagement Bar */}
-            <div className="border-t border-border pt-3">
-              <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
-                <div className="flex items-center gap-1">
-                  <div className="flex -space-x-1">
-                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">👍</span>
-                    </div>
-                    <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                      <span className="text-white text-xs">❤️</span>
-                    </div>
-                  </div>
-                  <span>142</span>
-                </div>
-                <div className="flex gap-4">
-                  <span>23 comments</span>
-                  <span>8 reposts</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-around pt-2 border-t border-border">
-                <button className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-accent text-muted-foreground">
-                  <Heart className="w-4 h-4" />
-                  <span>Like</span>
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-accent text-muted-foreground">
-                  <MessageSquare className="w-4 h-4" />
-                  <span>Comment</span>
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-accent text-muted-foreground">
-                  <Send className="w-4 h-4" />
-                  <span>Repost</span>
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-accent text-muted-foreground">
-                  <Send className="w-4 h-4" />
-                  <span>Send</span>
-                </button>
-              </div>
-            </div>
-          </CardContent>
+          </div>
         </Card>
 
-        {/* Live Comment Generator */}
-        <div className="mt-8 max-w-2xl mx-auto">
+        {/* AI Comment Generator Demo */}
+        <div className="mt-8">
           <CommentGenerator defaultPost={currentPost} />
         </div>
+
+        {/* How It Works Section */}
+        <Card className="mt-8 bg-white shadow-sm">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              How AutoComment.AI Works
+            </h3>
+            <div className="space-y-4 text-sm text-gray-600">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-blue-600 font-semibold text-xs">1</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Install Chrome Extension</p>
+                  <p>Add our extension to your Chrome browser - it's free and takes 30 seconds</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-blue-600 font-semibold text-xs">2</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Browse LinkedIn Normally</p>
+                  <p>Our AI automatically detects posts and generates relevant comment suggestions</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-blue-600 font-semibold text-xs">3</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Choose & Engage</p>
+                  <p>Select from AI-generated comments, customize if needed, and engage with your network</p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <Button 
+                onClick={() => navigate('/auth')} 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                Start Your Free Trial Today
+              </Button>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
