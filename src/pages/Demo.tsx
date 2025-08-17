@@ -248,12 +248,40 @@ export const Demo = () => {
               </div>
             </div>
             <div className="mt-6 pt-4 border-t border-gray-200">
-              <Button 
-                onClick={() => navigate('/auth')} 
+              <Button
+                onClick={() => navigate('/auth')}
                 className="w-full bg-blue-600 hover:bg-blue-700"
               >
                 Start Your Free Trial Today
               </Button>
+            </div>
+          </div>
+        </Card>
+
+        {/* Real Extension Process */}
+        <Card className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+              <Chrome className="w-5 h-5" />
+              About the Real Chrome Extension
+            </h3>
+            <div className="space-y-3 text-sm text-blue-800">
+              <p>
+                <strong>🎯 What you see above is a demo simulation.</strong> The actual Chrome extension works directly on LinkedIn.com and provides:
+              </p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li><strong>Automatic detection:</strong> No copy-pasting needed - comments appear instantly when you visit LinkedIn posts</li>
+                <li><strong>One-click commenting:</strong> Generated comments can be inserted directly into LinkedIn's comment box</li>
+                <li><strong>Personal branding:</strong> AI learns your writing style and professional persona over time</li>
+                <li><strong>Privacy focused:</strong> All processing happens securely - we never store your LinkedIn data</li>
+                <li><strong>Smart timing:</strong> Suggests optimal comment timing based on post engagement patterns</li>
+              </ul>
+              <div className="mt-4 p-3 bg-white/60 rounded-lg border border-blue-200">
+                <p className="text-xs text-blue-700">
+                  <strong>📋 Installation note:</strong> Due to Chrome Web Store review process, the extension is currently available to beta users.
+                  Sign up to join our beta program and get early access to the full Chrome extension!
+                </p>
+              </div>
             </div>
           </div>
         </Card>
